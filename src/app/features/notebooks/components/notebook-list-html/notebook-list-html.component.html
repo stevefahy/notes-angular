@@ -1,0 +1,47 @@
+<li ngClass="notebooks_list_bg">
+  <mat-card>
+    <mat-card-content ngClass="cardcontent">
+      <div ngClass="notebooks_list_outer">
+        <div
+          ngClass="notebooks_list_left {{
+            !notebookLoaded$() ? '' : 'tab_' + notebook_item$()!.notebook_cover
+          }}"
+        >
+          <div *ngIf="!notebookLoaded$()">
+            <ngx-skeleton-loader
+              count="1"
+              appearance="line"
+              [theme]="{ height: '50px' }"
+            ></ngx-skeleton-loader>
+          </div>
+        </div>
+        <div ngClass="notebooks_list_right">
+          <div *ngIf="!notebookLoaded$()">
+            <ngx-skeleton-loader
+              count="1"
+              appearance="line"
+              [theme]="{
+                height: '20px',
+                'margin-bottom': '0px',
+                'margin-top': '20px'
+              }"
+            ></ngx-skeleton-loader>
+            <ngx-skeleton-loader
+              count="1"
+              appearance="line"
+              [theme]="{ height: '10px' }"
+            ></ngx-skeleton-loader>
+          </div>
+          <ng-container *ngIf="notebookLoaded$()">
+            <div>{{ notebook_item$()!.notebook_name }}</div>
+            <div ngClass="date_format">
+              <div>
+                {{ dateFormat(notebook_item$()!.updatedAt!) }}
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</li>

@@ -1,0 +1,146 @@
+/**
+ * atom-dark theme for `prism.js`
+ * Based on Atom's `atom-dark` theme: https://github.com/atom/atom-dark-syntax
+ * @author Joe Gibson (@gibsjose)
+ */
+
+code[class*="language-"],
+pre[class*="language-"] {
+  color: #c5c8c6;
+  text-shadow: 0 1px rgba(0, 0, 0, 0.3);
+  font-family: Inconsolata, Monaco, Consolas, "Courier New", Courier, monospace;
+  direction: ltr;
+  text-align: left;
+  white-space: pre;
+  word-spacing: normal;
+  word-break: normal;
+  line-height: 1.5;
+
+  -moz-tab-size: 4;
+  -o-tab-size: 4;
+  tab-size: 4;
+
+  -webkit-hyphens: none;
+  -moz-hyphens: none;
+  -ms-hyphens: none;
+  hyphens: none;
+
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Code blocks */
+pre[class*="language-"] {
+  padding: 1em;
+  margin: 0.5em 0;
+  overflow: auto;
+  border-radius: 0.3em;
+}
+
+:not(pre) > code[class*="language-"],
+pre[class*="language-"] {
+  background: #1d1f21;
+}
+
+/* Inline code */
+:not(pre) > code[class*="language-"] {
+  padding: 0.1em;
+  border-radius: 0.3em;
+}
+
+.hljs-comment,
+.hljs-prolog,
+.hljs-doctype,
+.hljs-cdata {
+  color: #7c7c7c;
+}
+
+.hljs-punctuation {
+  color: #c5c8c6;
+}
+
+.namespace {
+  opacity: 0.7;
+}
+
+.hljs-property,
+.hljs-keyword,
+.hljs-tag {
+  color: #96cbfe;
+}
+
+.hljs-class-name {
+  color: #ffffb6;
+  text-decoration: underline;
+}
+
+.hljs-boolean,
+.hljs-constant {
+  color: #99cc99;
+}
+
+.hljs-symbol,
+.hljs-deleted {
+  color: #f92672;
+}
+
+.hljs-number {
+  color: #ff73fd;
+}
+
+.hljs-selector,
+.hljs-attr-name,
+.hljs-string,
+.hljs-char,
+.hljs-builtin,
+.hljs-inserted {
+  color: #a8ff60;
+}
+
+.hljs-variable {
+  color: #c6c5fe;
+}
+
+.hljs-operator {
+  color: #ededed;
+}
+
+.hljs-entity {
+  color: #ffffb6;
+  cursor: help;
+}
+
+.hljs-url {
+  color: #96cbfe;
+}
+
+.language-javascript .hljs-string,
+.style .hljs-string {
+  color: #87c38a;
+}
+
+.hljs-atrule,
+.hljs-attr-value {
+  color: #f9ee98;
+}
+
+.hljs-function {
+  color: #dad085;
+}
+
+.hljs-regex {
+  color: #e9c062;
+}
+
+.hljs-important {
+  color: #fd971f;
+}
+
+.hljs-important,
+.hljs-bold {
+  font-weight: bold;
+}
+
+.hljs-italic {
+  font-style: italic;
+}

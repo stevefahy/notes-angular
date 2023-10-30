@@ -1,0 +1,135 @@
+<ng-container *ngIf="!notebookLoaded() || !notesLoaded()">
+  <LoadingScreen />
+</ng-container>
+
+<div ngClass="page_scrollable_header_breadcrumb_footer_list">
+  <ng-container
+    *ngIf="notebookLoaded() && notesLoaded() && notebook() && notes()"
+  >
+    <ng-container *ngIf="notesLoaded() && notebook() && notes() !== null">
+      <NoteList
+        [notes]="notes()!"
+        [onNotesSelected]="updateSelected"
+        [onNotesEdit]="editNotes()"
+        [onClearNotesEdit]="clearEditNotes()"
+      />
+    </ng-container>
+  </ng-container>
+</div>
+<Footer>
+  <ng-container *ngIf="notebookLoaded() && notesLoaded() && !editNotes()">
+    <button
+      mat-button
+      color="secondary"
+      aria-label="Add note button"
+      ngClass="contained medium breadcrumb_edit_fab button_fab"
+      (click)="addNoteFormHandler()"
+    >
+      <span ngClass="icon_text">
+        <span ngClass="material-symbols-outlined button_icon white">
+          note_add
+        </span>
+        Add Note
+      </span>
+    </button>
+  </ng-container>
+  <ng-container
+    *ngIf="
+      notebookLoaded() &&
+      notesLoaded() &&
+      !editNotes() &&
+      notes() &&
+      notes()!.length > 0
+    "
+  >
+    <button
+      mat-button
+      color="secondary"
+      aria-label="Edit Notes button"
+      ngClass="contained medium breadcrumb_edit_fab button_fab"
+      (click)="editNoteFormHandler()"
+    >
+      <span ngClass="icon_text">
+        <span ngClass="material-symbols-outlined button_icon white">
+          edit
+        </span>
+        Edit Notes
+      </span>
+    </button>
+  </ng-container>
+
+  <ng-container
+    *ngIf="notebookLoaded() && notesLoaded() && notes() && notes()!.length < 1"
+  >
+    <button
+      mat-button
+      color="secondary"
+      aria-label="Delete Notebook button"
+      ngClass="contained medium breadcrumb_edit_fab button_fab"
+      (click)="deleteNotebookHandler()"
+    >
+      <span ngClass="icon_text">
+        <span ngClass="material-symbols-outlined button_icon white">
+          delete
+        </span>
+        Delete Notebook
+      </span>
+    </button>
+  </ng-container>
+  <ng-container
+    *ngIf="
+      notebookLoaded() &&
+      notesLoaded() &&
+      editNotes() &&
+      isSelected() &&
+      isSelected()!.selected.length > 0
+    "
+  >
+    <button
+      mat-button
+      color="secondary"
+      aria-label="Delete Note button"
+      ngClass="contained medium breadcrumb_edit_fab button_fab"
+      (click)="deleteNoteHandler()"
+    >
+      <span ngClass="icon_text">
+        <span ngClass="material-symbols-outlined button_icon white">
+          delete
+        </span>
+        Delete
+      </span>
+    </button>
+    <ng-container *ngIf="userNotebooks() && userNotebooks()!.length > 1">
+      <button
+        mat-button
+        color="secondary"
+        aria-label="Move Note button"
+        ngClass="contained medium breadcrumb_edit_fab button_fab"
+        (click)="moveNoteFormHandler()"
+      >
+        <span ngClass="icon_text">
+          <span ngClass="material-symbols-outlined button_icon white">
+            flip_to_front
+          </span>
+          Move
+        </span>
+      </button>
+    </ng-container>
+  </ng-container>
+  <ng-container *ngIf="notebookLoaded() && notesLoaded() && editNotes()">
+    <button
+      mat-button
+      color="secondary"
+      aria-label="Cancel Note button"
+      ngClass="contained medium breadcrumb_edit_fab button_fab"
+      (click)="cancelEditNoteFormHandler()"
+    >
+      <span ngClass="icon_text">
+        <span ngClass="material-symbols-outlined button_icon white">
+          cancel
+        </span>
+        Cancel
+      </span>
+    </button>
+  </ng-container>
+</Footer>

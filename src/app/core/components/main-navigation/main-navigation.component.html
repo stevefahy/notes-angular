@@ -1,0 +1,19 @@
+<div [ngClass]="'header'" id="header_height">
+  <div [ngClass]="'header_container'">
+    <div [ngClass]="'logo_container'">
+      <div [ngClass]="'header_title_logo'">
+        <img
+          src="../../../../assets/images/edit_white.png"
+          alt="Notes logo"
+          width="20"
+          height="20"
+        />
+      </div>
+      <div [ngClass]="'header_title'">NOTES</div>
+    </div>
+    <div [ngClass]="'header_toolbar'">
+      <MenuDropdown />
+    </div>
+  </div>
+</div>
+<Breadcrumb />

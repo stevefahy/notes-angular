@@ -1,0 +1,16 @@
+<ng-container *ngIf="!isLoaded()">
+  <ngx-skeleton-loader count="1" appearance="line"></ngx-skeleton-loader>
+</ng-container>
+<ng-container *ngIf="isLoaded()">
+  <div ngClass="box">
+    <article ngClass="viewnote_content viewnote_thumb">
+      <ng-container *ngIf="isLoaded()">
+        <ViewNoteMarkdown
+          [viewText]="content"
+          [updatedViewText]="updateViewText"
+          [disableLinks]="true"
+        />
+      </ng-container>
+    </article>
+  </div>
+</ng-container>
