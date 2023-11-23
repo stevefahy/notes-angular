@@ -13,7 +13,7 @@
   flex-direction: row;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 20px;
+  gap: 5px;
 }
 
 .control label {
@@ -41,5 +41,17 @@
 }
 
 .dialogue_container {
-  width: 300px;
+  max-width: 300px;
+}
+
+@media only screen and (max-width: 380px) {
+  .control {
+    gap: 5px;
+  }
+
+  .control input {
+    font-size: 0.7rem !important;
+    padding-top: unset;
+    padding-bottom: unset;
+  }
 }

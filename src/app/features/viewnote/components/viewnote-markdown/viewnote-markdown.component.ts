@@ -5,6 +5,10 @@ import { Router } from '@angular/router';
 import emoji_defs from 'src/app/core/lib/emoji_definitions';
 ('../../../core/lib/emoji_definitions');
 import markdownItAnchor from 'markdown-it-anchor';
+import hljs from 'highlight.js/lib/core';
+import hjls_js from 'highlight.js/lib/languages/javascript';
+import hjls_css from 'highlight.js/lib/languages/css';
+import hjls_markdown from 'highlight.js/lib/languages/markdown';
 
 // Required for gray-matter library
 (window as any).global = window;
@@ -13,17 +17,11 @@ global.Buffer = global.Buffer || require('buffer').Buffer;
   version: '',
 };
 
-const hljs = require('highlight.js');
-hljs.registerLanguage(
-  'javascript',
-  require('highlight.js/lib/languages/javascript')
-);
-hljs.registerLanguage('css', require('highlight.js/lib/languages/css'));
-hljs.registerLanguage(
-  'markdown',
-  require('highlight.js/lib/languages/markdown')
-);
-hljs.registerLanguage('md', require('highlight.js/lib/languages/markdown'));
+// HIGHLIGHTJS
+hljs.registerLanguage('javascript', hjls_js);
+hljs.registerLanguage('css', hjls_css);
+hljs.registerLanguage('markdown', hjls_markdown);
+hljs.registerLanguage('md', hjls_markdown);
 
 // MARKDOWN-IT
 
@@ -58,26 +56,18 @@ var md = require('markdown-it')({
 
 var emoji = require('markdown-it-emoji');
 md.use(emoji, { defs: emoji_defs });
-
 md.use(require('markdown-it-footnote'));
-
 md.use(require('markdown-it-sub'));
-
 md.use(require('markdown-it-sup'));
-
 md.use(require('markdown-it-ins'));
-
 md.use(require('markdown-it-mark'));
-
 md.use(require('markdown-it-abbr'));
-
 md.use(require('markdown-it-attrs'), {
   // optional, these are default options '{' and '}'
   leftDelimiter: 'xx',
   rightDelimiter: 'xx',
   allowedAttributes: [], // empty array = all attributes are allowed
 });
-
 md.use(require('markdown-it-task-checkbox'), {
   disabled: true,
   divWrap: true,
@@ -86,7 +76,6 @@ md.use(require('markdown-it-task-checkbox'), {
   ulClass: 'task-list',
   liClass: 'task-list-item',
 });
-
 md.use(markdownItAnchor, {
   level: 1,
   permalink: false,

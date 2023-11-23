@@ -58,6 +58,21 @@
     </button>
   </ng-container>
 
+  <ng-container *ngIf="noteLoaded() && viewText().length === 0 && isCreate()">
+    <button
+      mat-button
+      color="secondary"
+      aria-label="Example Note button"
+      ngClass="contained medium breadcrumb_edit_fab button_fab example_button"
+      (click)="exampleNote()"
+    >
+      <span ngClass="icon_text">
+        <span ngClass="material-symbols-outlined button_icon white"> egg </span>
+        Example
+      </span>
+    </button>
+  </ng-container>
+
   <ng-container *ngIf="noteLoaded() && !isSplitScreen()">
     <button
       mat-button
@@ -83,21 +98,6 @@
           Edit
         </span></ng-container
       >
-    </button>
-  </ng-container>
-
-  <ng-container *ngIf="noteLoaded() && viewText().length === 0 && isCreate()">
-    <button
-      mat-button
-      color="secondary"
-      aria-label="Example Note button"
-      ngClass="contained medium breadcrumb_edit_fab button_fab example_button"
-      (click)="exampleNote()"
-    >
-      <span ngClass="icon_text">
-        <span ngClass="material-symbols-outlined button_icon white"> egg </span>
-        Example
-      </span>
     </button>
   </ng-container>
 

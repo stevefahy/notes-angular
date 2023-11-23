@@ -28,14 +28,16 @@
             </div>
           </a>
           <ng-container *ngIf="onNotesEdit">
-            <div ngClass="thumb_select">
-              <input
-                id="`input_{{ note._id }}`"
-                type="checkbox"
-                name="Status"
-                value="{{ note._id }}"
-                (change)="checkboxStatus($event)"
-              />
+            <div ngClass="thumb_select_outer">
+              <div ngClass="thumb_select">
+                <input
+                  id="`input_{{ note._id }}`"
+                  type="checkbox"
+                  name="Status"
+                  value="{{ note._id }}"
+                  (change)="checkboxStatus($event)"
+                />
+              </div>
             </div>
           </ng-container>
         </div>

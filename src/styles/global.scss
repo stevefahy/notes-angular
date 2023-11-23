@@ -102,7 +102,7 @@ body {
   --viewnotethumb-box-min-height: 56;
 
   margin: 0;
-  color: #333333;
+  color: rgb(98, 98, 98);
   font-family: "Helvetica", "Arial", sans-serif;
 }
 
@@ -650,6 +650,11 @@ ul p {
   list-style: none;
 }
 
+.task-list-item .checkbox {
+  display: flex;
+  align-items: flex-start;
+}
+
 .MuiBreadcrumbs-separator {
   margin-left: 2px !important;
   margin-right: 2px !important;
@@ -678,8 +683,6 @@ main {
   overflow: hidden;
   position: relative;
 }
-
-/* editviewnote_shared.scss */
 
 .editnote_box {
   display: flex;
@@ -725,8 +728,6 @@ main {
   height: auto;
 }
 
-/* NEW */
-
 p .hljs code,
 li .hljs code {
   background-color: inherit;
@@ -742,8 +743,6 @@ li code {
   display: inline-flex;
   padding: 0 4px;
 }
-
-/* editviewnote_shared.scss */
 
 .viewnote_content pre {
   color: rgb(197, 200, 198);
@@ -798,5 +797,44 @@ li code {
     --mat-snack-bar-button-color: #116600;
     position: relative;
     bottom: 70px;
+  }
+}
+
+@media only screen and (max-width: 380px) {
+  .mat-mdc-snack-bar-container {
+    max-width: 70%;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .material-symbols-outlined {
+    font-size: 20px;
+  }
+
+  .button_icon {
+    margin-right: 4px !important;
+  }
+
+  .icon_text {
+    font-size: 12px;
+  }
+
+  select {
+    font-size: 0.8rem;
+  }
+
+  .mat-mdc-button.mat-mdc-button-base.medium {
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+    font-size: 0.875rem;
+  }
+
+  .mat-mdc-button.mat-mdc-button-base,
+  .mat-mdc-raised-button.mat-mdc-button-base,
+  .mat-mdc-unelevated-button.mat-mdc-button-base,
+  .mat-mdc-outlined-button.mat-mdc-button-base {
+    height: 32px !important;
   }
 }

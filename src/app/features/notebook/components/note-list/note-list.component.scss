@@ -21,6 +21,12 @@
   z-index: 1000;
 }
 
+.thumb_select_outer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
 .note_list_card:hover {
   background-color: #f7f7f7;
 }

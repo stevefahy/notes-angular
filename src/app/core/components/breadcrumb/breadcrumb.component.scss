@@ -47,11 +47,18 @@
 .breadcrumbs_inner {
   width: 100%;
   display: flex;
+  color: rgba(0, 0, 0, 0.6);
+  align-items: center;
 }
 
 .breadcrumb_edit_btn {
+  position: absolute;
+  height: 100%;
+  top: 0;
   display: flex;
-  justify-content: flex-end;
+  align-content: center;
+  align-items: center;
+  right: 15px;
 }
 
 .breadcrumb_seperator {

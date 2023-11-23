@@ -42,7 +42,7 @@
             disabled="{{ checkForm() }}"
             (click)="submitHandler($event)"
           >
-            Add Notebook
+            Add
           </button>
         </div>
         <div *ngIf="method === 'edit'">
@@ -54,7 +54,7 @@
             disabled="{{ checkForm() }}"
             (click)="submitHandler($event)"
           >
-            Edit Notebook
+            <span ngClass="icon_text"> Confirm </span>
           </button>
         </div>
       </div>

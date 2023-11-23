@@ -18,12 +18,10 @@
   position: relative;
   width: 100%;
   display: flex;
-  justify-content: space-evenly;
   flex-direction: row;
   flex-direction: row;
-  justify-content: center;
   align-items: center;
-  gap: 20px;
+  justify-content: space-evenly;
 }
 
 .page_footer_container button {

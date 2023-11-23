@@ -99,19 +99,19 @@
             Note
           </span>
         </div>
-      </div>
 
-      <!-- EDIT NOTEBOOK BUTTON  -->
-      <div *ngIf="notebookLoaded() && pageLayout() === 'notebook'">
-        <div [ngClass]="'breadcrumb_edit_btn'">
-          <button
-            mat-mini-fab
-            aria-label="Edit notebook button"
-            ngClass="breadcrumb_edit_fab"
-            (click)="editNotebook()"
-          >
-            <span ngClass="material-symbols-outlined edit_icon"> edit </span>
-          </button>
+        <!-- EDIT NOTEBOOK BUTTON  -->
+        <div *ngIf="notebookLoaded() && pageLayout() === 'notebook'">
+          <div [ngClass]="'breadcrumb_edit_btn'">
+            <button
+              mat-mini-fab
+              aria-label="Edit notebook button"
+              ngClass="breadcrumb_edit_fab"
+              (click)="editNotebook()"
+            >
+              <span ngClass="material-symbols-outlined edit_icon"> edit </span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

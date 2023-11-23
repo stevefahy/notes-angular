@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "notes-angular-private": {
+    "notes-angular-public": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -17,7 +17,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/notes-angular-private",
+            "outputPath": "dist/notes-angular-public",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": ["zone.js"],
@@ -65,10 +65,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "notes-angular-private:build:production"
+              "browserTarget": "notes-angular-public:build:production"
             },
             "development": {
-              "browserTarget": "notes-angular-private:build:development"
+              "browserTarget": "notes-angular-public:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -76,7 +76,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "notes-angular-private:build"
+            "browserTarget": "notes-angular-public:build"
           }
         },
         "test": {
