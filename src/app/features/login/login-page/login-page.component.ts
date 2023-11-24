@@ -11,9 +11,9 @@ import {
 import { Router } from '@angular/router';
 import {
   AlertInterface,
-  AuthAuthenticate,
-  AuthSignup,
   IAuthContext,
+  onLoginT,
+  onRegisterT,
 } from '../../../core/model/global';
 import APPLICATION_CONSTANTS from '../../../core/application-constants/application-constants';
 import { AuthService } from '../../../core/services/auth.service';
@@ -47,13 +47,8 @@ export class LoginPageComponent implements OnInit, OnDestroy {
   });
   error$ = toObservable(this.error);
 
-  onLogin: (email: string, password: string) => Promise<AuthAuthenticate>;
-  onRegister: (
-    username: string,
-    email: string,
-    password: string,
-    framework: string
-  ) => Promise<AuthSignup>;
+  onLogin: onLoginT;
+  onRegister: onRegisterT;
 
   onDestroy$: Subject<void> = new Subject();
 

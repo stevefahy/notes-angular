@@ -371,6 +371,17 @@ export type Logout = LogoutError | LogoutSuccess;
 
 // AuthContext
 
+export type onLoginT = (
+  email: string,
+  password: string
+) => Promise<AuthAuthenticate> | void;
+export type onRegisterT = (
+  username: string,
+  email: string,
+  password: string,
+  framework: string
+) => Promise<AuthSignup> | void;
+
 export interface AuthContextType {
   authContext: IAuthContext;
 }

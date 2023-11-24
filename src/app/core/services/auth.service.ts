@@ -207,11 +207,11 @@ export class AuthService {
           framework
         );
         if (!response) {
-          return;
+          return { error: `${AC.GENERAL_ERROR}` };
         }
         if (response.error) {
           this.showNotification(`${response.error}`);
-          return;
+          return { error: `${response.error}` };
         }
         if (response.success) {
           this.authContext.update((authContext: IAuthContext) => {
@@ -233,13 +233,12 @@ export class AuthService {
         }
       } catch (err) {
         this.showNotification(`${err}`);
-        return;
-      } finally {
-        return;
+        return { error: `${err}` };
       }
     } else {
-      return;
+      return { error: `${AC.GENERAL_ERROR}` };
     }
+    return;
   };
 
   public initialState = {
