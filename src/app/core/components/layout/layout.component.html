@@ -1,0 +1,9 @@
+<MainNavigation />
+<main><ng-content></ng-content></main>
+<div *ngIf="status()">
+  <NotificationView
+    n_status="{{ notification().n_status }}"
+    title="{{ notification().title }}"
+    message="{{ notification().message }}"
+  />
+</div>

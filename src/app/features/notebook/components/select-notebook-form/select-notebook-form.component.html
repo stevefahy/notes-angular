@@ -1,0 +1,70 @@
+<div ngClass="dialogue_container">
+  <h2 mat-dialog-title ngClass="dialogue-title">Move to Notebook</h2>
+  <div mat-dialog-content>
+    <form ngClass="form">
+      <div ngClass="control">
+        <label htmlFor="new-notebook-cover">Name</label>
+        <select
+          name="notebooks"
+          id="notebooks"
+          value="selectedNotebook"
+          (change)="handleChange($event)"
+        >
+          <option defaultValue="true" value="default">
+            Select a notebook...
+          </option>
+          <ng-container *ngIf="notebooks && notebooksSorted">
+            <ng-container
+              *ngFor="
+                let notebook of notebooksSorted();
+                trackBy: trackByNotebooks
+              "
+            >
+              <ng-container *ngIf="notebook._id !== notebookId">
+                <option [value]="notebook._id">
+                  {{ notebook.notebook_name }}
+                </option>
+              </ng-container>
+            </ng-container>
+          </ng-container>
+        </select>
+      </div>
+    </form>
+
+    <div ngClass="button_row">
+      <div ngClass="action">
+        <div ngClass="move">
+          <button
+            mat-button
+            [disabled]="!formIsValid()"
+            color="secondary"
+            aria-label="Move Note button"
+            ngClass="contained medium"
+            (click)="submitHandler($event)"
+          >
+            <span ngClass="icon_text"> Move Note </span>
+          </button>
+        </div>
+        <div ngClass="cancel">
+          <button
+            mat-button
+            color="secondary"
+            aria-label="Edit notebook button"
+            ngClass="contained medium"
+            (click)="cancelHandler($event)"
+          >
+            <span ngClass="icon_text">
+              <span ngClass="material-symbols-outlined button_icon white">
+                cancel
+              </span>
+              Cancel
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <ng-container *ngIf="error().error_state">
+      <ng-container #errorcontainer></ng-container>
+    </ng-container>
+  </div>
+</div>

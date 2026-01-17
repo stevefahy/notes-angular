@@ -1,0 +1,90 @@
+<div ngClass="change_buttons">
+  <button
+    mat-button
+    color="secondary"
+    aria-label="User Name button"
+    ngClass="contained medium"
+    (click)="toggleUserName()"
+  >
+    User Name
+  </button>
+  <button
+    mat-button
+    color="secondary"
+    aria-label="Password button"
+    ngClass="contained medium"
+    (click)="togglePassword()"
+  >
+    Password
+  </button>
+</div>
+
+<ng-container *ngIf="passwordToggle()">
+  <div ngClass="form_container">
+    <form ngClass="form" (ngSubmit)="submitHandlerPassword($event)">
+      <div ngClass="control">
+        <label htmlFor="new-password">New Password</label>
+        <input
+          autoComplete="New Password"
+          type="password"
+          id="new-password"
+          #newPasswordRef
+          (change)="handleChangePassword($event)"
+        />
+      </div>
+      <div ngClass="control">
+        <label htmlFor="old-password">Old Password</label>
+        <input
+          autoComplete="New User Name"
+          type="password"
+          id="old-password"
+          #oldPasswordRef
+          (change)="handleChangePassword($event)"
+        />
+      </div>
+      <div ngClass="action">
+        <button
+          mat-button
+          color="secondary"
+          aria-label="Change Password button"
+          ngClass="contained medium"
+          disabled="{{ !formIsValid() }}"
+        >
+          Change Password
+        </button>
+      </div>
+    </form>
+  </div>
+</ng-container>
+
+<ng-container *ngIf="userNameToggle()">
+  <div ngClass="form_container">
+    <form ngClass="form" (ngSubmit)="submitHandlerUsername($event)">
+      <div ngClass="control">
+        <label htmlFor="new-username">User Name</label>
+        <input
+          [defaultValue]="username()"
+          type="text"
+          id="new-password"
+          #newUsernameRef
+          (input)="handleChangeUsername($event)"
+        />
+      </div>
+      <div ngClass="action">
+        <button
+          mat-button
+          color="secondary"
+          aria-label="Change User Name button"
+          ngClass="contained medium"
+          disabled="{{ !formIsValid() }}"
+        >
+          Change User Name
+        </button>
+      </div>
+    </form>
+  </div>
+</ng-container>
+
+<ng-container *ngIf="error().error_state">
+  <ng-container #errorcontainer></ng-container>
+</ng-container>

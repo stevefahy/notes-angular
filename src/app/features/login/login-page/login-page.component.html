@@ -1,0 +1,74 @@
+<section [ngClass]="'auth'">
+  <mat-card>
+    <mat-card-content>
+      <mat-card-header [ngClass]="'header'">{{
+        isLogin() ? "Login" : "Sign Up"
+      }}</mat-card-header>
+      <form novalidate>
+        <div *ngIf="!isLogin()">
+          <div [ngClass]="'control'">
+            <label htmlFor="username">Your Name</label>
+            <input
+              type="text"
+              id="username"
+              required
+              placeholder="Username"
+              autoComplete="username"
+              (input)="resetError()"
+              #usernameInputRef
+            />
+          </div>
+        </div>
+        <div [ngClass]="'control'">
+          <label htmlFor="email">Your Email</label>
+          <input
+            type="email"
+            id="email"
+            required
+            placeholder="Email"
+            autoComplete="email"
+            (change)="resetError()"
+            (input)="resetError()"
+            #emailInputRef
+          />
+        </div>
+        <div [ngClass]="'control'">
+          <label htmlFor="password">Your Password</label>
+          <input
+            type="password"
+            id="password"
+            required
+            placeholder="Password"
+            autoComplete="current-password"
+            (change)="resetError()"
+            (input)="resetError()"
+            #passwordInputRef
+          />
+        </div>
+        <div [ngClass]="'actions'">
+          <button
+            mat-button
+            [ngClass]="'contained medium'"
+            color="secondary"
+            (click)="submitHandler($event)"
+            [disabled]="isSubmitting()"
+          >
+            {{ isLogin() ? "Login" : "Create Account" }}
+          </button>
+          <button
+            mat-button
+            [ngClass]="'basic large'"
+            (click)="switchAuthModeHandler()"
+          >
+            {{
+              isLogin() ? "Create new account" : "Login with existing account"
+            }}
+          </button>
+        </div>
+      </form>
+      <ng-container *ngIf="error().error_state">
+        <ng-container #errorcontainer></ng-container>
+      </ng-container>
+    </mat-card-content>
+  </mat-card>
+</section>

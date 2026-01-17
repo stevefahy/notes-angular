@@ -1,0 +1,133 @@
+<ng-container *ngIf="!noteLoaded() || token === null">
+  <LoadingScreen />
+</ng-container>
+
+<div ngClass="page_scrollable_header_breadcrumb_footer">
+  <ng-container *ngIf="noteLoaded() && token !== null">
+    <div ngClass="view_container" id="view_container">
+      <ViewNote
+        [visible]="!isView()"
+        [splitScreen]="isSplitScreen()"
+        [viewText]="viewText()"
+        [updatedViewText]="updatedViewTextHandler"
+      />
+      <EditNote
+        [visible]="isView()"
+        [splitScreen]="isSplitScreen()"
+        [loadedText]="loadedText()"
+        [updateViewText]="updatedViewTextHandler"
+        [passUpdatedViewText]="updateEditTextProp()"
+      />
+    </div>
+  </ng-container>
+</div>
+<Footer>
+  <ng-container
+    *ngIf="noteLoaded() && viewText().length > 0 && !isCreate() && isChanged()"
+  >
+    <button
+      mat-button
+      color="secondary"
+      aria-label="Save Note button"
+      ngClass="contained medium breadcrumb_edit_fab button_fab"
+      (click)="saveNoteCallback()"
+    >
+      <span ngClass="icon_text">
+        <span ngClass="material-symbols-outlined button_icon white">
+          add_circle
+        </span>
+        Save Note
+      </span>
+    </button>
+  </ng-container>
+
+  <ng-container *ngIf="noteLoaded() && viewText().length > 0 && isCreate()">
+    <button
+      mat-button
+      color="secondary"
+      aria-label="Create Note button"
+      ngClass="contained medium breadcrumb_edit_fab button_fab"
+      (click)="createNotePost()"
+    >
+      <span ngClass="icon_text">
+        <span ngClass="material-symbols-outlined button_icon white">
+          add_circle
+        </span>
+        Create Note
+      </span>
+    </button>
+  </ng-container>
+
+  <ng-container *ngIf="noteLoaded() && viewText().length === 0 && isCreate()">
+    <button
+      mat-button
+      color="secondary"
+      aria-label="Example Note button"
+      ngClass="contained medium breadcrumb_edit_fab button_fab example_button"
+      (click)="exampleNote()"
+    >
+      <span ngClass="icon_text">
+        <span ngClass="material-symbols-outlined button_icon white"> egg </span>
+        Example
+      </span>
+    </button>
+  </ng-container>
+
+  <ng-container *ngIf="noteLoaded() && !isSplitScreen()">
+    <button
+      mat-button
+      color="secondary"
+      aria-label="Toggle View button"
+      ngClass="contained medium breadcrumb_edit_fab button_fab"
+      (click)="toggleEditHandlerCallback()"
+    >
+      <ng-container *ngIf="isView()">
+        <span ngClass="icon_text">
+          <span ngClass="material-symbols-outlined button_icon white">
+            visibility
+          </span>
+          View
+        </span>
+      </ng-container>
+
+      <ng-container *ngIf="!isView()">
+        <span ngClass="icon_text">
+          <span ngClass="material-symbols-outlined button_icon white">
+            edit
+          </span>
+          Edit
+        </span></ng-container
+      >
+    </button>
+  </ng-container>
+
+  <ng-container *ngIf="noteLoaded() && !isMobile()">
+    <button
+      mat-button
+      color="secondary"
+      aria-label="Toggle Split Screen button"
+      ngClass="contained medium breadcrumb_edit_fab button_fab split_screen_button"
+      (click)="toggleSplitHandlerCallback()"
+    >
+      <ng-container *ngIf="isSplitScreen()">
+        <span className="split_screen_icon">
+          <img
+            src="/assets/images/split_screen_icon_single.png"
+            alt="split screen icon"
+            width="30"
+            height="30"
+          /> </span
+      ></ng-container>
+
+      <ng-container *ngIf="!isSplitScreen()">
+        <span className="split_screen_icon">
+          <img
+            src="/assets/images/split_screen_icon_double.png"
+            alt="split screen icon"
+            width="30"
+            height="30"
+          /> </span
+      ></ng-container>
+    </button>
+  </ng-container>
+</Footer>

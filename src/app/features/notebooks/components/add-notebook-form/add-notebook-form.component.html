@@ -1,0 +1,82 @@
+<div ngClass="dialogue_container">
+  <h2 mat-dialog-title ngClass="dialogue-title">
+    {{ method === "edit" ? "Edit Notebook" : "Add Notebook" }}
+  </h2>
+  <div mat-dialog-content>
+    <form ngClass="form">
+      <div ngClass="control">
+        <label htmlFor="new-notebook">Name</label>
+        <input
+          type="text"
+          id="new-notebook"
+          [defaultValue]="notebookName"
+          (input)="nameChangeHandler(getValue($event))"
+        />
+      </div>
+      <div ngClass="control">
+        <label htmlFor="new-notebook-cover">Cover</label>
+        <select
+          name="cars"
+          ngClass="select_dialogue"
+          id="new-notebook-cover"
+          (change)="coverChangeHandler(getValueAsNotebookCoverType($event))"
+        >
+          <option
+            *ngFor="let folder of folderOptions; trackBy: trackfolderOptions"
+            [value]="folder.value"
+            [selected]="folder.value === notebookCover"
+          >
+            {{ folder.viewValue }}
+          </option>
+        </select>
+      </div>
+    </form>
+    <div ngClass="button_row">
+      <div ngClass="checkForm() ? action_disabled : action">
+        <div *ngIf="method === 'create'">
+          <button
+            mat-button
+            color="secondary"
+            aria-label="Add notebook button"
+            ngClass="contained medium"
+            disabled="{{ checkForm() }}"
+            (click)="submitHandler($event)"
+          >
+            Add
+          </button>
+        </div>
+        <div *ngIf="method === 'edit'">
+          <button
+            mat-button
+            color="secondary"
+            aria-label="Edit notebook button"
+            ngClass="contained medium"
+            disabled="{{ checkForm() }}"
+            (click)="submitHandler($event)"
+          >
+            <span ngClass="icon_text"> Confirm </span>
+          </button>
+        </div>
+      </div>
+      <div>
+        <button
+          mat-button
+          color="secondary"
+          aria-label="Edit notebook button"
+          ngClass="contained medium"
+          (click)="cancelHandler($event)"
+        >
+          <span ngClass="icon_text">
+            <span ngClass="material-symbols-outlined button_icon white">
+              cancel
+            </span>
+            Cancel
+          </span>
+        </button>
+      </div>
+    </div>
+    <ng-container *ngIf="error().error_state">
+      <ng-container #errorcontainer></ng-container>
+    </ng-container>
+  </div>
+</div>

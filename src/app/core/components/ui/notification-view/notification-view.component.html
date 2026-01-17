@@ -1,0 +1,8 @@
+<div [ngClass]="'notification_outer'">
+  <section
+    [ngClass]="errorClasses ? 'notification success' : 'notification error'"
+  >
+    <h2>{{ title }}</h2>
+    <p>{{ message }}</p>
+  </section>
+</div>

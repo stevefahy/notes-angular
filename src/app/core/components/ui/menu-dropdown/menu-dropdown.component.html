@@ -1,0 +1,38 @@
+<div ngClass="nav_menu">
+  <button
+    mat-icon-button
+    [matMenuTriggerFor]="menu"
+    aria-label="icon-button with a menu"
+  >
+    <mat-icon ngClass="icon">more_vert</mat-icon>
+  </button>
+  <mat-menu #menu="matMenu">
+    <div *ngIf="success && details">
+      <button mat-menu-item (click)="handleProfile($event)">
+        <mat-icon>account_circle</mat-icon>
+        <span>{{ details.username }}</span>
+      </button>
+    </div>
+
+    <div *ngIf="success">
+      <button mat-menu-item (click)="handleProfile($event)">
+        <mat-icon>settings</mat-icon>
+        <span>Settings</span>
+      </button>
+    </div>
+
+    <div *ngIf="!success">
+      <button mat-menu-item (click)="loginHandler($event)">
+        <mat-icon>login</mat-icon>
+        <span>Login</span>
+      </button>
+    </div>
+
+    <div *ngIf="success">
+      <button mat-menu-item (click)="onLogout()">
+        <mat-icon>logout</mat-icon>
+        <span>Logout</span>
+      </button>
+    </div>
+  </mat-menu>
+</div>

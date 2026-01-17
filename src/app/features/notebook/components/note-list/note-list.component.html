@@ -1,0 +1,47 @@
+<ng-container *ngIf="userNotes()">
+  <ul ngClass="notes_list">
+    <ng-container *ngFor="let note of userNotes(); trackBy: trackuserNotes">
+      <li key="{note._id}" ngClass="notebook_list_bg">
+        <div ngClass="thumb_outer">
+          <a
+            routerLink="/notebook/{{ note.notebook }}/{{ note._id }}"
+            ngClass="thumb_outer_link"
+            (click)="(NoteLinkHandler)"
+          >
+            <div ngClass="thumb_outer_link">
+              <div
+                [id]="note._id"
+                ngClass="edit_link"
+                (click)="EditLinkHandler(note._id)"
+              >
+                <mat-card ngClass="note_list_card">
+                  <mat-card-content ngClass="cardcontent">
+                    <div ngClass="thumb_image">
+                      <ViewNoteThumb [text]="note.note" />
+                    </div>
+                    <div ngClass="date_format date_format_notes">
+                      {{ dateFormat(note.updatedAt!) }}
+                    </div>
+                  </mat-card-content>
+                </mat-card>
+              </div>
+            </div>
+          </a>
+          <ng-container *ngIf="onNotesEdit">
+            <div ngClass="thumb_select_outer">
+              <div ngClass="thumb_select">
+                <input
+                  id="`input_{{ note._id }}`"
+                  type="checkbox"
+                  name="Status"
+                  value="{{ note._id }}"
+                  (change)="checkboxStatus($event)"
+                />
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </li>
+    </ng-container>
+  </ul>
+</ng-container>
