@@ -5,7 +5,7 @@ import { AppComponent } from './app.component';
 import { PageNotFoundComponent } from './core/components/page-not-found/page-not-found.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from './core/material.module';
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { StoreModule } from '@ngrx/store';
 import {
   editingReducer,
@@ -16,24 +16,17 @@ import { CoreModule } from './core/core.module';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { snackReducer } from './store/reducers/snack.reducer';
 
-@NgModule({
-  declarations: [AppComponent, PageNotFoundComponent],
-  imports: [
-    NgxSkeletonLoaderModule.forRoot(),
-    CoreModule,
-    BrowserModule,
-    AppRoutingModule,
-    BrowserAnimationsModule,
-    MaterialModule,
-    HttpClientModule,
-    StoreModule.forRoot({
-      notification: notificationReducer,
-      edited: editedReducer,
-      editing: editingReducer,
-      snack: snackReducer,
-    }),
-  ],
-  providers: [],
-  bootstrap: [AppComponent],
-})
+@NgModule({ declarations: [AppComponent, PageNotFoundComponent],
+    bootstrap: [AppComponent], imports: [NgxSkeletonLoaderModule.forRoot(),
+        CoreModule,
+        BrowserModule,
+        AppRoutingModule,
+        BrowserAnimationsModule,
+        MaterialModule,
+        StoreModule.forRoot({
+            notification: notificationReducer,
+            edited: editedReducer,
+            editing: editingReducer,
+            snack: snackReducer,
+        })], providers: [provideHttpClient(withInterceptorsFromDi())] })
 export class AppModule {}
