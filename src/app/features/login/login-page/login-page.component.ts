@@ -24,9 +24,10 @@ import { ErrorAlertComponent } from '../../../core/components/ui/error-alert/err
 const AC = APPLICATION_CONSTANTS;
 
 @Component({
-  selector: 'LoginPage',
-  templateUrl: './login-page.component.html',
-  styleUrls: ['./login-page.component.scss'],
+    selector: 'LoginPage',
+    templateUrl: './login-page.component.html',
+    styleUrls: ['./login-page.component.scss'],
+    standalone: false
 })
 export class LoginPageComponent implements OnInit, OnDestroy {
   constructor(private authService: AuthService, private router: Router) {}

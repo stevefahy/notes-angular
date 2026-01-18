@@ -17,9 +17,10 @@ import {
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
-  selector: 'NotebooksList',
-  templateUrl: './notebookslist.component.html',
-  styleUrls: ['../../styles_shared/notebook-list-shared-css.scss'],
+    selector: 'NotebooksList',
+    templateUrl: './notebookslist.component.html',
+    styleUrls: ['../../styles_shared/notebook-list-shared-css.scss'],
+    standalone: false
 })
 export class NotebookslistComponent implements OnInit, OnDestroy {
   @Input() notebooks: GetNotebooks;

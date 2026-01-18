@@ -297,9 +297,10 @@ md.use(require('markdown-it-container'), 'custom-css', {
 });
 
 @Component({
-  selector: 'ViewNoteMarkdown',
-  templateUrl: './viewnote-markdown.component.html',
-  styleUrls: ['./viewnote-markdown.component.scss'],
+    selector: 'ViewNoteMarkdown',
+    templateUrl: './viewnote-markdown.component.html',
+    styleUrls: ['./viewnote-markdown.component.scss'],
+    standalone: false
 })
 export class ViewnoteMarkdownComponent
   implements ViewNoteMarkdownProps, OnInit

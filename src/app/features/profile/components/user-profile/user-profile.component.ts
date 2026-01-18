@@ -8,9 +8,10 @@ import { changeUsername } from 'src/app/core/helpers/changeUsername';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
-  selector: 'UserProfile',
-  templateUrl: './user-profile.component.html',
-  styleUrls: ['./user-profile.component.scss'],
+    selector: 'UserProfile',
+    templateUrl: './user-profile.component.html',
+    styleUrls: ['./user-profile.component.scss'],
+    standalone: false
 })
 export class UserProfileComponent implements OnInit, OnDestroy {
   loading: boolean | null;

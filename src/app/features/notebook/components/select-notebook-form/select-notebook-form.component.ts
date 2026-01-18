@@ -20,9 +20,10 @@ import { ErrorAlertComponent } from '../../../../core/components/ui/error-alert/
 import { toObservable } from '@angular/core/rxjs-interop';
 
 @Component({
-  selector: 'SelectNotebookForm',
-  templateUrl: './select-notebook-form.component.html',
-  styleUrls: ['./select-notebook-form.component.scss'],
+    selector: 'SelectNotebookForm',
+    templateUrl: './select-notebook-form.component.html',
+    styleUrls: ['./select-notebook-form.component.scss'],
+    standalone: false
 })
 export class SelectNotebookFormComponent
   implements SelectNotebookFormProps, OnInit, OnDestroy

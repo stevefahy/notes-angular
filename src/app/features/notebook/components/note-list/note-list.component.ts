@@ -20,10 +20,11 @@ import { Observable, of, Subject, takeUntil } from 'rxjs';
 import DateFormat from 'src/app/core/lib/date-format';
 
 @Component({
-  selector: 'NoteList',
-  templateUrl: './note-list.component.html',
-  styleUrls: ['./note-list.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'NoteList',
+    templateUrl: './note-list.component.html',
+    styleUrls: ['./note-list.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class NoteListComponent implements NotesProps, OnInit, OnDestroy {
   @Input()

@@ -2,9 +2,10 @@ import { Component, Input } from '@angular/core';
 import { AlertInterface, ErrorSeverity } from 'src/app/core/model/global';
 
 @Component({
-  selector: 'ErrorAlert',
-  templateUrl: './error-alert.component.html',
-  styleUrls: ['./error-alert.component.scss'],
+    selector: 'ErrorAlert',
+    templateUrl: './error-alert.component.html',
+    styleUrls: ['./error-alert.component.scss'],
+    standalone: false
 })
 export class ErrorAlertComponent implements AlertInterface {
   @Input() error_state: boolean;

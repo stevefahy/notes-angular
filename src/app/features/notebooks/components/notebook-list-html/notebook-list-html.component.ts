@@ -3,9 +3,10 @@ import { Notebook } from 'src/app/core/model/global';
 import DateFormat from '../../../../core/lib/date-format';
 
 @Component({
-  selector: 'NotebookListHtml',
-  templateUrl: './notebook-list-html.component.html',
-  styleUrls: ['../../styles_shared/notebook-list-shared-css.scss'],
+    selector: 'NotebookListHtml',
+    templateUrl: './notebook-list-html.component.html',
+    styleUrls: ['../../styles_shared/notebook-list-shared-css.scss'],
+    standalone: false
 })
 export class NotebookListHtmlComponent {
   @Input()

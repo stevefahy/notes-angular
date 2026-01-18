@@ -10,9 +10,10 @@ import { selectEdited } from 'src/app/store/selectors/notebook_edit.selector';
 import { NotebookEditActions } from 'src/app/store/actions/notebook_edit.actions';
 
 @Component({
-  selector: 'Breadcrumb',
-  templateUrl: './breadcrumb.component.html',
-  styleUrls: ['./breadcrumb.component.scss'],
+    selector: 'Breadcrumb',
+    templateUrl: './breadcrumb.component.html',
+    styleUrls: ['./breadcrumb.component.scss'],
+    standalone: false
 })
 export class BreadcrumbComponent implements OnInit, OnDestroy {
   constructor(private router: Router, private store: Store) {

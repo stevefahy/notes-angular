@@ -10,9 +10,10 @@ global.Buffer = global.Buffer || require('buffer').Buffer;
 };
 
 @Component({
-  selector: 'ViewNote',
-  templateUrl: './viewnote.component.html',
-  styleUrls: ['./viewnote.component.scss'],
+    selector: 'ViewNote',
+    templateUrl: './viewnote.component.html',
+    styleUrls: ['./viewnote.component.scss'],
+    standalone: false
 })
 export class ViewnoteComponent implements NoteEditorView, OnInit {
   @Input() visible: boolean;

@@ -8,9 +8,10 @@ import { Subject, takeUntil } from 'rxjs';
 const AC = APPLICATION_CONSTANTS;
 
 @Component({
-  selector: 'MenuDropdown',
-  templateUrl: './menu-dropdown.component.html',
-  styleUrls: ['./menu-dropdown.component.scss'],
+    selector: 'MenuDropdown',
+    templateUrl: './menu-dropdown.component.html',
+    styleUrls: ['./menu-dropdown.component.scss'],
+    standalone: false
 })
 export class MenuDropdownComponent implements OnInit, OnDestroy {
   constructor(private authService: AuthService, private router: Router) {}

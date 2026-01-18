@@ -26,9 +26,10 @@ import { ErrorAlertComponent } from '../../../../core/components/ui/error-alert/
 const AC = APPLICATION_CONSTANTS;
 
 @Component({
-  selector: 'AddNotebookForm',
-  templateUrl: './add-notebook-form.component.html',
-  styleUrls: ['./add-notebook-form.component.scss'],
+    selector: 'AddNotebookForm',
+    templateUrl: './add-notebook-form.component.html',
+    styleUrls: ['./add-notebook-form.component.scss'],
+    standalone: false
 })
 export class AddNotebookFormComponent
   implements NotebookAddEdit, OnInit, OnDestroy

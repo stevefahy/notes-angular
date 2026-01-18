@@ -34,10 +34,11 @@ import { AuthGuardService } from '../../../core/services/auth-guard.service';
 const AC = APPLICATION_CONSTANTS;
 
 @Component({
-  selector: 'Note',
-  templateUrl: './note.component.html',
-  styleUrls: ['./note.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'Note',
+    templateUrl: './note.component.html',
+    styleUrls: ['./note.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class NoteComponent implements OnInit, OnDestroy {
   constructor(

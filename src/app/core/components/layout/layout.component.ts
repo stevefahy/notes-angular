@@ -31,9 +31,10 @@ const setScreenHeight = () => {
 };
 
 @Component({
-  selector: 'Layout',
-  templateUrl: './layout.component.html',
-  styleUrls: ['./layout.component.scss'],
+    selector: 'Layout',
+    templateUrl: './layout.component.html',
+    styleUrls: ['./layout.component.scss'],
+    standalone: false
 })
 export class LayoutComponent implements OnDestroy, OnInit {
   constructor(private store: Store, private _snackBar: MatSnackBar) {}

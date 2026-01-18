@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 
 @Component({
-  selector: 'LoadingScreen',
-  templateUrl: './loading-screen.component.html',
-  styleUrls: ['./loading-screen.component.scss'],
+    selector: 'LoadingScreen',
+    templateUrl: './loading-screen.component.html',
+    styleUrls: ['./loading-screen.component.scss'],
+    standalone: false
 })
 export class LoadingScreenComponent {}

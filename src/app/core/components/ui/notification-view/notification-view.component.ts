@@ -2,9 +2,10 @@ import { Component, Input } from '@angular/core';
 import { NotificationInterface } from 'src/app/core/model/global';
 
 @Component({
-  selector: 'NotificationView',
-  templateUrl: './notification-view.component.html',
-  styleUrls: ['./notification-view.component.scss'],
+    selector: 'NotificationView',
+    templateUrl: './notification-view.component.html',
+    styleUrls: ['./notification-view.component.scss'],
+    standalone: false
 })
 export class NotificationViewComponent implements NotificationInterface {
   @Input() title: string;

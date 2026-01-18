@@ -7,9 +7,10 @@ import { getNotebooks } from '../../../core/helpers/getNotebooks';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
-  selector: 'Notebooks',
-  templateUrl: './notebooks.component.html',
-  styleUrls: ['./notebooks.component.scss'],
+    selector: 'Notebooks',
+    templateUrl: './notebooks.component.html',
+    styleUrls: ['./notebooks.component.scss'],
+    standalone: false
 })
 export class NotebooksComponent implements OnInit, OnDestroy {
   notebooksLoaded = signal<boolean>(false);

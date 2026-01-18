@@ -23,9 +23,10 @@ import { Subject, takeUntil } from 'rxjs';
 const AC = APPLICATION_CONSTANTS;
 
 @Component({
-  selector: 'ProfileForm',
-  templateUrl: './profile-form.component.html',
-  styleUrls: ['./profile-form.component.scss'],
+    selector: 'ProfileForm',
+    templateUrl: './profile-form.component.html',
+    styleUrls: ['./profile-form.component.scss'],
+    standalone: false
 })
 export class ProfileFormComponent
   implements ProfileFormProps, OnInit, OnDestroy

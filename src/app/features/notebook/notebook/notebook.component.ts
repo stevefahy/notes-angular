@@ -37,10 +37,11 @@ import { AddNotebookFormComponent } from '../../notebooks/components/add-noteboo
 import { Subscription, Subject, takeUntil } from 'rxjs';
 
 @Component({
-  selector: 'Notebook',
-  templateUrl: './notebook.component.html',
-  styleUrls: ['./notebook.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'Notebook',
+    templateUrl: './notebook.component.html',
+    styleUrls: ['./notebook.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class NotebookComponent implements OnInit, OnDestroy {
   constructor(

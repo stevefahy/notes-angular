@@ -12,9 +12,10 @@ import {
 import { NoteEditor } from 'src/app/core/model/global';
 
 @Component({
-  selector: 'EditNote',
-  templateUrl: './editnote.component.html',
-  styleUrls: ['./editnote.component.scss'],
+    selector: 'EditNote',
+    templateUrl: './editnote.component.html',
+    styleUrls: ['./editnote.component.scss'],
+    standalone: false
 })
 export class EditnoteComponent
   implements NoteEditor, OnInit, AfterViewInit, OnChanges

@@ -15,10 +15,11 @@ global.Buffer = global.Buffer || require('buffer').Buffer;
 };
 
 @Component({
-  selector: 'ViewNoteThumb',
-  templateUrl: './viewnotethumb.component.html',
-  styleUrls: ['./viewnotethumb.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'ViewNoteThumb',
+    templateUrl: './viewnotethumb.component.html',
+    styleUrls: ['./viewnotethumb.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ViewnotethumbComponent implements OnInit {
   @Input()
