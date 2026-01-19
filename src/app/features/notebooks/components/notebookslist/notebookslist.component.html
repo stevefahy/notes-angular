@@ -1,28 +1,30 @@
-<div *ngIf="!isLoaded()"><LoadingScreen /></div>
-<div *ngIf="userNotebooks()">
-  <ul ngClass="notebooks_list">
-    <ng-container
-      *ngFor="let notebook of userNotebooks(); trackBy: trackByuserNotebooks"
-    >
-      <NotebookListItem [notebook_item]="notebook" />
-    </ng-container>
-  </ul>
-</div>
+@if (!isLoaded()) {
+  <div><LoadingScreen /></div>
+}
+@if (userNotebooks()) {
+  <div>
+    <ul ngClass="notebooks_list">
+      @for (notebook of userNotebooks(); track trackByuserNotebooks($index, notebook)) {
+        <NotebookListItem [notebook_item]="notebook" />
+      }
+    </ul>
+  </div>
+}
 <Footer>
-  <ng-container *ngIf="userNotebooks()">
-    <button
-      mat-button
-      color="secondary"
-      aria-label="Add notebook button"
-      ngClass="contained medium breadcrumb_edit_fab button_fab"
-      (click)="addNotebookFormHandler()"
+@if (userNotebooks()) {
+  <button
+    mat-button
+    color="secondary"
+    aria-label="Add notebook button"
+    ngClass="contained medium breadcrumb_edit_fab button_fab"
+    (click)="addNotebookFormHandler()"
     >
-      <span ngClass="icon_text">
-        <span ngClass="material-symbols-outlined button_icon white">
-          add_circle
-        </span>
-        Add Notebook
+    <span ngClass="icon_text">
+      <span ngClass="material-symbols-outlined button_icon white">
+        add_circle
       </span>
-    </button>
-  </ng-container>
+      Add Notebook
+    </span>
+  </button>
+}
 </Footer>

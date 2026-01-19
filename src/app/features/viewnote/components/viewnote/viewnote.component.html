@@ -3,28 +3,28 @@
   ngClass="view {{ splitScreen ? 'view_split show' : '' }} editnote_box {{
     visible ? 'show' : 'hide'
   }} "
->
+  >
   <mat-card>
     <mat-card-content ngClass="cardcontent">
       <article
         id="viewnote_id"
         ngClass="viewnote_content viewer viewnote_content"
-      >
-        <ng-container *ngIf="!isLoaded()">
+        >
+        @if (!isLoaded()) {
           <ngx-skeleton-loader
             count="1"
             appearance="line"
           ></ngx-skeleton-loader>
-        </ng-container>
-        <ng-container *ngIf="isLoaded()">
+        }
+        @if (isLoaded()) {
           <ViewNoteMarkdown
-            [splitScreen]="splitScreen"
-            [viewText]="contextView()"
-            [updatedViewText]="updateViewText"
-            [disableLinks]="false"
+          [splitScreen]="splitScreen"
+          [viewText]="contextView()"
+          [updatedViewText]="updateViewText"
+          [disableLinks]="false"
           />
-        </ng-container>
-      </article>
-    </mat-card-content>
-  </mat-card>
+      }
+    </article>
+  </mat-card-content>
+</mat-card>
 </div>

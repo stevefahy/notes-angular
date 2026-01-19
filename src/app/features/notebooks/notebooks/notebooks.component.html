@@ -1,8 +1,12 @@
-<div *ngIf="!notebooksLoaded()">
-  <LoadingScreen />
-</div>
-<div ngClass="page_scrollable_header_breadcrumb_footer_list">
-  <div *ngIf="notebooksLoaded() && userNotebooks().notebooks">
-    <NotebooksList [notebooks]="userNotebooks()" />
+@if (!notebooksLoaded()) {
+  <div>
+    <LoadingScreen />
   </div>
+}
+<div ngClass="page_scrollable_header_breadcrumb_footer_list">
+  @if (notebooksLoaded() && userNotebooks().notebooks) {
+    <div>
+      <NotebooksList [notebooks]="userNotebooks()" />
+    </div>
+  }
 </div>

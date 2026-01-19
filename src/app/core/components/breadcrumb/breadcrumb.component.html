@@ -1,119 +1,129 @@
-<div *ngIf="pageLayout() !== 'other'">
+@if (pageLayout() !== 'other') {
   <div>
-    <div role="presentation" [ngClass]="'breadcrumb_container'">
-      <div ngClass="breadcrumbs_inner">
-        <!-- PROFILE -->
-        <div *ngIf="notebookLoaded() && pageLayout() === 'profile'">
-          <NotebooksLink />
-        </div>
-
-        <div *ngIf="notebookLoaded() && pageLayout() === 'profile'">
-          <span [ngClass]="'breadcrumb_link'">
-            <span [ngClass]="'breadcrumb_link_icon'">
-              <span [ngClass]="'breadcrumb_seperator'">/</span>
-            </span>
-            <mat-icon ngClass="breadcrumb_icon">account_circle</mat-icon>
-            Profile
-          </span>
-        </div>
-
-        <!-- NOTEBOOKS  -->
-        <div *ngIf="notebookLoaded() && pageLayout() === 'notebook'">
-          <NotebooksLink />
-        </div>
-
-        <!-- NOTEBOOKS / NOTEBOOK  -->
-        <div *ngIf="notebookLoaded() && pageLayout() === 'notebooks'">
-          <NotebooksNolink />
-        </div>
-        <div
-          *ngIf="
+    <div>
+      <div role="presentation" [ngClass]="'breadcrumb_container'">
+        <div ngClass="breadcrumbs_inner">
+          <!-- PROFILE -->
+          @if (notebookLoaded() && pageLayout() === 'profile') {
+            <div>
+              <NotebooksLink />
+            </div>
+          }
+          @if (notebookLoaded() && pageLayout() === 'profile') {
+            <div>
+              <span [ngClass]="'breadcrumb_link'">
+                <span [ngClass]="'breadcrumb_link_icon'">
+                  <span [ngClass]="'breadcrumb_seperator'">/</span>
+                </span>
+                <mat-icon ngClass="breadcrumb_icon">account_circle</mat-icon>
+                Profile
+              </span>
+            </div>
+          }
+          <!-- NOTEBOOKS  -->
+          @if (notebookLoaded() && pageLayout() === 'notebook') {
+            <div>
+              <NotebooksLink />
+            </div>
+          }
+          <!-- NOTEBOOKS / NOTEBOOK  -->
+          @if (notebookLoaded() && pageLayout() === 'notebooks') {
+            <div>
+              <NotebooksNolink />
+            </div>
+          }
+          @if (
             notebookLoaded() &&
             pageLayout() === 'notebook' &&
             notebook() &&
             notebook().name
-          "
-        >
-          <a routerLink="notebook/{{ notebook().id }}">
-            <span [ngClass]="'breadcrumb_link'">
-              <span [ngClass]="'breadcrumb_link_icon'">
-                <span [ngClass]="'breadcrumb_seperator'">/</span>
-              </span>
-              <span
-                class="material-icons-outlined"
+            ) {
+            <div
+              >
+              <a routerLink="notebook/{{ notebook().id }}">
+                <span [ngClass]="'breadcrumb_link'">
+                  <span [ngClass]="'breadcrumb_link_icon'">
+                    <span [ngClass]="'breadcrumb_seperator'">/</span>
+                  </span>
+                  <span
+                    class="material-icons-outlined"
                 ngClass="icon_notebook breadcrumb_icon notebook_cover_{{
                   notebook().cover
                 }} "
+                    >
+                    description
+                  </span>
+                  <span [ngClass]="'breadcrumb_link_btn'">
+                    {{ notebook().name }}
+                  </span>
+                </span>
+              </a>
+            </div>
+          }
+          <!-- NOTEEBOOKS / NOTEBOOK / NOTE  -->
+          @if (notebookLoaded() && pageLayout() === 'note') {
+            <div>
+              <NotebooksLink />
+            </div>
+          }
+          @if (notebookLoaded() && notebook().name && pageLayout() === 'note') {
+            <div
               >
-                description
-              </span>
-              <span [ngClass]="'breadcrumb_link_btn'">
-                {{ notebook().name }}
-              </span>
-            </span>
-          </a>
-        </div>
-
-        <!-- NOTEEBOOKS / NOTEBOOK / NOTE  -->
-        <div *ngIf="notebookLoaded() && pageLayout() === 'note'">
-          <NotebooksLink />
-        </div>
-        <div
-          *ngIf="notebookLoaded() && notebook().name && pageLayout() === 'note'"
-        >
-          <a routerLink="notebook/{{ notebook().id }}">
-            <span [ngClass]="'breadcrumb_link'">
-              <span [ngClass]="'breadcrumb_link_icon'">
-                <span [ngClass]="'breadcrumb_seperator'">/</span>
-              </span>
-              <span
-                class="material-icons-outlined"
+              <a routerLink="notebook/{{ notebook().id }}">
+                <span [ngClass]="'breadcrumb_link'">
+                  <span [ngClass]="'breadcrumb_link_icon'">
+                    <span [ngClass]="'breadcrumb_seperator'">/</span>
+                  </span>
+                  <span
+                    class="material-icons-outlined"
                 ngClass="icon_notebook breadcrumb_icon notebook_cover_{{
                   notebook().cover
                 }} "
+                    >
+                    description
+                  </span>
+                  <span [ngClass]="'breadcrumb_link_btn'">
+                    {{ notebook().name }}
+                  </span>
+                </span>
+              </a>
+            </div>
+          }
+          <!-- NOTE  -->
+          @if (notebookLoaded() && notebook().name && pageLayout() === 'note') {
+            <div
               >
-                description
+              <span [ngClass]="'breadcrumb_link'">
+                <span [ngClass]="'breadcrumb_link_icon'">
+                  <span [ngClass]="'breadcrumb_seperator'">/</span>
+                </span>
+                <span
+                  class="material-icons-outlined"
+                  ngClass="note icon_note breadcrumb_icon "
+                  >
+                  note
+                </span>
+                Note
               </span>
-              <span [ngClass]="'breadcrumb_link_btn'">
-                {{ notebook().name }}
-              </span>
-            </span>
-          </a>
-        </div>
-
-        <!-- NOTE  -->
-        <div
-          *ngIf="notebookLoaded() && notebook().name && pageLayout() === 'note'"
-        >
-          <span [ngClass]="'breadcrumb_link'">
-            <span [ngClass]="'breadcrumb_link_icon'">
-              <span [ngClass]="'breadcrumb_seperator'">/</span>
-            </span>
-
-            <span
-              class="material-icons-outlined"
-              ngClass="note icon_note breadcrumb_icon "
-            >
-              note
-            </span>
-            Note
-          </span>
-        </div>
-
-        <!-- EDIT NOTEBOOK BUTTON  -->
-        <div *ngIf="notebookLoaded() && pageLayout() === 'notebook'">
-          <div [ngClass]="'breadcrumb_edit_btn'">
-            <button
-              mat-mini-fab
-              aria-label="Edit notebook button"
-              ngClass="breadcrumb_edit_fab"
-              (click)="editNotebook()"
-            >
-              <span ngClass="material-symbols-outlined edit_icon"> edit </span>
-            </button>
-          </div>
+            </div>
+          }
+          <!-- EDIT NOTEBOOK BUTTON  -->
+          @if (notebookLoaded() && pageLayout() === 'notebook') {
+            <div>
+              <div [ngClass]="'breadcrumb_edit_btn'">
+                <button
+                  mat-mini-fab
+                  aria-label="Edit notebook button"
+                  ngClass="breadcrumb_edit_fab"
+                  (click)="editNotebook()"
+                  >
+                  <span ngClass="material-symbols-outlined edit_icon"> edit </span>
+                </button>
+              </div>
+            </div>
+          }
         </div>
       </div>
     </div>
   </div>
-</div>
+}

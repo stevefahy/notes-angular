@@ -9,24 +9,21 @@
           id="notebooks"
           value="selectedNotebook"
           (change)="handleChange($event)"
-        >
+          >
           <option defaultValue="true" value="default">
             Select a notebook...
           </option>
-          <ng-container *ngIf="notebooks && notebooksSorted">
-            <ng-container
-              *ngFor="
-                let notebook of notebooksSorted();
-                trackBy: trackByNotebooks
-              "
-            >
-              <ng-container *ngIf="notebook._id !== notebookId">
+          @if (notebooks && notebooksSorted) {
+            @for (
+              notebook of notebooksSorted(); track trackByNotebooks($index,
+              notebook)) {
+              @if (notebook._id !== notebookId) {
                 <option [value]="notebook._id">
                   {{ notebook.notebook_name }}
                 </option>
-              </ng-container>
-            </ng-container>
-          </ng-container>
+              }
+            }
+          }
         </select>
       </div>
     </form>
@@ -41,7 +38,7 @@
             aria-label="Move Note button"
             ngClass="contained medium"
             (click)="submitHandler($event)"
-          >
+            >
             <span ngClass="icon_text"> Move Note </span>
           </button>
         </div>
@@ -52,7 +49,7 @@
             aria-label="Edit notebook button"
             ngClass="contained medium"
             (click)="cancelHandler($event)"
-          >
+            >
             <span ngClass="icon_text">
               <span ngClass="material-symbols-outlined button_icon white">
                 cancel
@@ -63,8 +60,8 @@
         </div>
       </div>
     </div>
-    <ng-container *ngIf="error().error_state">
+    @if (error().error_state) {
       <ng-container #errorcontainer></ng-container>
-    </ng-container>
+    }
   </div>
 </div>

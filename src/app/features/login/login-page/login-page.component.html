@@ -5,20 +5,22 @@
         isLogin() ? "Login" : "Sign Up"
       }}</mat-card-header>
       <form novalidate>
-        <div *ngIf="!isLogin()">
-          <div [ngClass]="'control'">
-            <label htmlFor="username">Your Name</label>
-            <input
-              type="text"
-              id="username"
-              required
-              placeholder="Username"
-              autoComplete="username"
-              (input)="resetError()"
-              #usernameInputRef
-            />
+        @if (!isLogin()) {
+          <div>
+            <div [ngClass]="'control'">
+              <label htmlFor="username">Your Name</label>
+              <input
+                type="text"
+                id="username"
+                required
+                placeholder="Username"
+                autoComplete="username"
+                (input)="resetError()"
+                #usernameInputRef
+                />
+            </div>
           </div>
-        </div>
+        }
         <div [ngClass]="'control'">
           <label htmlFor="email">Your Email</label>
           <input
@@ -30,7 +32,7 @@
             (change)="resetError()"
             (input)="resetError()"
             #emailInputRef
-          />
+            />
         </div>
         <div [ngClass]="'control'">
           <label htmlFor="password">Your Password</label>
@@ -43,7 +45,7 @@
             (change)="resetError()"
             (input)="resetError()"
             #passwordInputRef
-          />
+            />
         </div>
         <div [ngClass]="'actions'">
           <button
@@ -52,23 +54,23 @@
             color="secondary"
             (click)="submitHandler($event)"
             [disabled]="isSubmitting()"
-          >
+            >
             {{ isLogin() ? "Login" : "Create Account" }}
           </button>
           <button
             mat-button
             [ngClass]="'basic large'"
             (click)="switchAuthModeHandler()"
-          >
+            >
             {{
-              isLogin() ? "Create new account" : "Login with existing account"
+            isLogin() ? "Create new account" : "Login with existing account"
             }}
           </button>
         </div>
       </form>
-      <ng-container *ngIf="error().error_state">
+      @if (error().error_state) {
         <ng-container #errorcontainer></ng-container>
-      </ng-container>
+      }
     </mat-card-content>
   </mat-card>
 </section>
