@@ -791,9 +791,9 @@ li code {
 .mat-mdc-snack-bar-container {
   &.snackbar {
     border-radius: 15px;
-    --mdc-snackbar-container-color: rgb(236, 247, 237);
+    --mat-snackbar-container-color: rgb(236, 247, 237);
     --mat-mdc-snack-bar-button-color: #116600;
-    --mdc-snackbar-supporting-text-color: #116600;
+    --mat-snackbar-supporting-text-color: #116600;
     --mat-snack-bar-button-color: #116600;
     position: relative;
     bottom: 70px;

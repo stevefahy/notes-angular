@@ -97,8 +97,8 @@ $color-success: #ecf7ed;
 }
 
 .mat-mdc-button.contained[disabled][disabled] {
-  --mdc-text-button-disabled-label-text-color: rgba(0, 0, 0, 0.38);
-  --mdc-text-button-label-text-color: rgba(0, 0, 0, 0.38);
+  --mat-button-text-disabled-label-text-color: rgba(0, 0, 0, 0.38);
+  --mat-button-text-label-text-color: rgba(0, 0, 0, 0.38);
 }
 
 // Sizes large medium small
