@@ -1,6 +1,8 @@
 import { Component, Input, OnInit, signal } from '@angular/core';
 import { ViewNoteMarkdownProps } from 'src/app/core/model/global';
-import * as matter from 'gray-matter';
+// import * as matter from 'gray-matter';
+import matter from 'gray-matter';
+import { Buffer } from 'buffer';
 import { Router } from '@angular/router';
 import emoji_defs from 'src/app/core/lib/emoji_definitions';
 ('../../../core/lib/emoji_definitions');
@@ -10,9 +12,22 @@ import hjls_js from 'highlight.js/lib/languages/javascript';
 import hjls_css from 'highlight.js/lib/languages/css';
 import hjls_markdown from 'highlight.js/lib/languages/markdown';
 
+import MarkdownIt from 'markdown-it';
+import markdownItEmoji from 'markdown-it-emoji';
+import markdownItFootnote from 'markdown-it-footnote';
+import markdownItSub from 'markdown-it-sub';
+import markdownItSup from 'markdown-it-sup';
+import markdownItIns from 'markdown-it-ins';
+import markdownItMark from 'markdown-it-mark';
+import markdownItAbbr from 'markdown-it-abbr';
+import markdownItAttrs from 'markdown-it-attrs';
+import markdownItTaskCheckbox from 'markdown-it-task-checkbox';
+import markdownItContainer from 'markdown-it-container';
+
 // Required for gray-matter library
 (window as any).global = window;
-global.Buffer = global.Buffer || require('buffer').Buffer;
+// global.Buffer = global.Buffer || require('buffer').Buffer;
+global.Buffer = global.Buffer || Buffer;
 (window as any).process = {
   version: '',
 };
@@ -25,7 +40,37 @@ hljs.registerLanguage('md', hjls_markdown);
 
 // MARKDOWN-IT
 
-var md = require('markdown-it')({
+// var md = require('markdown-it')({
+// var md = new MarkdownIt({
+//   html: true,
+//   linkify: true,
+//   typographer: true,
+//   langPrefix: 'language-',
+//   highlight: function (str: any, lang: any) {
+//     if (lang && hljs.getLanguage(lang)) {
+//       try {
+//         return (
+//           '<pre class="hljs"><code>' +
+//           hljs.highlight(str, { language: lang, ignoreIllegals: false }).value +
+//           '</code></pre><p>' +
+//           lang +
+//           '</p>'
+//         );
+//       } catch (__) {}
+//     }
+//     return (
+//       '<pre class="hljs"><code>' +
+//       md.utils.escapeHtml(str) +
+//       '</code></pre><p>' +
+//       lang +
+//       '</p>'
+//     );
+//   },
+// });
+
+// MARKDOWN-IT
+let md: MarkdownIt;
+md = new MarkdownIt({
   html: true,
   linkify: true,
   typographer: true,
@@ -54,21 +99,42 @@ var md = require('markdown-it')({
 
 // MARKDOWN-IT PLUGINS
 
-var emoji = require('markdown-it-emoji');
-md.use(emoji, { defs: emoji_defs });
-md.use(require('markdown-it-footnote'));
-md.use(require('markdown-it-sub'));
-md.use(require('markdown-it-sup'));
-md.use(require('markdown-it-ins'));
-md.use(require('markdown-it-mark'));
-md.use(require('markdown-it-abbr'));
-md.use(require('markdown-it-attrs'), {
-  // optional, these are default options '{' and '}'
+// var emoji = require('markdown-it-emoji');
+// md.use(emoji, { defs: emoji_defs });
+// md.use(require('markdown-it-footnote'));
+// md.use(require('markdown-it-sub'));
+// md.use(require('markdown-it-sup'));
+// md.use(require('markdown-it-ins'));
+// md.use(require('markdown-it-mark'));
+// md.use(require('markdown-it-abbr'));
+// md.use(require('markdown-it-attrs'), {
+//   // optional, these are default options '{' and '}'
+//   leftDelimiter: 'xx',
+//   rightDelimiter: 'xx',
+//   allowedAttributes: [], // empty array = all attributes are allowed
+// });
+// md.use(require('markdown-it-task-checkbox'), {
+//   disabled: true,
+//   divWrap: true,
+//   divClass: 'checkbox',
+//   idPrefix: 'cbx_',
+//   ulClass: 'task-list',
+//   liClass: 'task-list-item',
+// });
+
+md.use(markdownItEmoji, { defs: emoji_defs });
+md.use(markdownItFootnote);
+md.use(markdownItSub);
+md.use(markdownItSup);
+md.use(markdownItIns);
+md.use(markdownItMark);
+md.use(markdownItAbbr);
+md.use(markdownItAttrs, {
   leftDelimiter: 'xx',
   rightDelimiter: 'xx',
-  allowedAttributes: [], // empty array = all attributes are allowed
+  allowedAttributes: [],
 });
-md.use(require('markdown-it-task-checkbox'), {
+md.use(markdownItTaskCheckbox, {
   disabled: true,
   divWrap: true,
   divClass: 'checkbox',
@@ -76,6 +142,7 @@ md.use(require('markdown-it-task-checkbox'), {
   ulClass: 'task-list',
   liClass: 'task-list-item',
 });
+
 md.use(markdownItAnchor, {
   level: 1,
   permalink: false,
@@ -130,12 +197,12 @@ const getSize = (node: string) => {
 // & Change Anchor links to scrollIntoView
 // Remember old renderer, if overridden, or proxy to default renderer
 var defaultRender =
-  md.renderer.rules.link_open ||
+  md.renderer.rules['link_open'] ||
   function (tokens: any, idx: any, options: any, env: any, slf: any) {
     return slf.renderToken(tokens, idx, options);
   };
 
-md.renderer.rules.link_open = function (
+md.renderer.rules['link_open'] = function (
   tokens: any,
   idx: any,
   options: any,
@@ -166,7 +233,7 @@ md.renderer.rules.link_open = function (
   return defaultRender(tokens, idx, options, env, slf);
 };
 
-md.renderer.rules.link_close = function (
+md.renderer.rules['link_close'] = function (
   tokens: any,
   idx: any,
   options: any,
@@ -186,7 +253,7 @@ md.renderer.rules.link_close = function (
 };
 
 // Add class to table
-md.renderer.rules.table_open = function (tokens: any, idx: any) {
+md.renderer.rules['table_open'] = function (tokens: any, idx: any) {
   return '<table class="table table-striped">';
 };
 
@@ -213,7 +280,7 @@ md.renderer.rules.image = function (
 };
 
 // Footnotes enable scrollIntoView instead of Anchor link
-md.renderer.rules.footnote_anchor = function (
+md.renderer.rules['footnote_anchor'] = function (
   tokens: any,
   idx: any,
   options: any,
@@ -235,7 +302,7 @@ md.renderer.rules.footnote_anchor = function (
   /* ↩ with escape code to prevent display as Apple Emoji on iOS */
 };
 
-md.renderer.rules.footnote_ref = function (
+md.renderer.rules['footnote_ref'] = function (
   tokens: any,
   idx: any,
   options: any,
@@ -263,7 +330,8 @@ md.renderer.rules.footnote_ref = function (
 // CUSTOM CONTAINERS
 
 // Custom container that can have styles added
-md.use(require('markdown-it-container'), 'custom', {
+// md.use(require('markdown-it-container'), 'custom', {
+md.use(markdownItContainer, 'custom', {
   validate: function (params: any) {
     return params.trim().match(/^custom\s+(.*)$/);
   },
@@ -280,7 +348,8 @@ md.use(require('markdown-it-container'), 'custom', {
 });
 
 // Custom container that can have css added
-md.use(require('markdown-it-container'), 'custom-css', {
+// md.use(require('markdown-it-container'), 'custom-css', {
+md.use(markdownItContainer), 'custom-css', {
   validate: function (params: any) {
     return params.trim().match(/^custom-css\s+(.*)$/);
   },
@@ -294,7 +363,7 @@ md.use(require('markdown-it-container'), 'custom-css', {
       return '</span>\n';
     }
   },
-});
+};
 
 @Component({
     selector: 'ViewNoteMarkdown',

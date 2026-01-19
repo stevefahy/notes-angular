@@ -1,7 +1,7 @@
-@if (!notebookLoaded) {
+@if (!notebookLoaded()) {
   <NotebookListHtml [notebook_item]="null" [notebookLoaded]="false" />
 }
-@if (notebookLoaded) {
+@if (notebookLoaded()) {
   <a routerLink="/notebook/{{ notebook_item._id }}">
     <NotebookListHtml
     [notebook_item]="notebook_item"

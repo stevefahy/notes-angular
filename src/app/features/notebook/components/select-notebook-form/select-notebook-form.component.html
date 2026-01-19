@@ -13,7 +13,7 @@
           <option defaultValue="true" value="default">
             Select a notebook...
           </option>
-          @if (notebooks && notebooksSorted) {
+          @if (notebooks && notebooksSorted()) {
             @for (
               notebook of notebooksSorted(); track trackByNotebooks($index,
               notebook)) {

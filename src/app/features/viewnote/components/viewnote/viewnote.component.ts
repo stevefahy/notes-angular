@@ -1,10 +1,13 @@
 import { Component, Input, OnInit, signal } from '@angular/core';
 import { NoteEditorView } from 'src/app/core/model/global';
-import * as matter from 'gray-matter';
+// import * as matter from 'gray-matter';
+import matter from 'gray-matter';
+import { Buffer } from 'buffer';
 
 // Required for gray-matter library
 (window as any).global = window;
-global.Buffer = global.Buffer || require('buffer').Buffer;
+// global.Buffer = global.Buffer || require('buffer').Buffer;
+global.Buffer = global.Buffer || Buffer;
 (window as any).process = {
   version: '',
 };
