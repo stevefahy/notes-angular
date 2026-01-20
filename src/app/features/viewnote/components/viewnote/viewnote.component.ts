@@ -1,22 +1,20 @@
 import { Component, Input, OnInit, signal } from '@angular/core';
 import { NoteEditorView } from 'src/app/core/model/global';
-// import * as matter from 'gray-matter';
 import matter from 'gray-matter';
 import { Buffer } from 'buffer';
 
 // Required for gray-matter library
 (window as any).global = window;
-// global.Buffer = global.Buffer || require('buffer').Buffer;
 global.Buffer = global.Buffer || Buffer;
 (window as any).process = {
   version: '',
 };
 
 @Component({
-    selector: 'ViewNote',
-    templateUrl: './viewnote.component.html',
-    styleUrls: ['./viewnote.component.scss'],
-    standalone: false
+  selector: 'ViewNote',
+  templateUrl: './viewnote.component.html',
+  styleUrls: ['./viewnote.component.scss'],
+  standalone: false
 })
 export class ViewnoteComponent implements NoteEditorView, OnInit {
   @Input() visible: boolean;
@@ -31,13 +29,13 @@ export class ViewnoteComponent implements NoteEditorView, OnInit {
   }
   @Input() updatedViewText: (updatedEdit: string) => void;
 
-  constructor() {}
+  constructor() { }
 
   content: string;
   contextView = signal<string>('');
   isLoaded = signal<boolean>(false);
 
-  ngOnInit(): void {}
+  ngOnInit(): void { }
 
   loadedTimer: NodeJS.Timeout;
   hideSkeleton = () => {

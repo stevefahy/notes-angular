@@ -12,6 +12,10 @@ Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`.
 
 Open [http://localhost:4200](http://localhost:4200) with your browser to see the result.
 
+```bash
+Run `ng build` for a production build.`. 
+```
+
 ## About
 
 This is a note taking app. The notes can be written using [Markdown](https://www.markdownguide.org/).

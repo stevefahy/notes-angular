@@ -4,25 +4,20 @@
     <form ngClass="form">
       <div ngClass="control">
         <label htmlFor="new-notebook-cover">Name</label>
-        <select
-          name="notebooks"
-          id="notebooks"
-          value="selectedNotebook"
-          (change)="handleChange($event)"
-          >
+        <select name="notebooks" id="notebooks" value="selectedNotebook" (change)="handleChange($event)">
           <option defaultValue="true" value="default">
             Select a notebook...
           </option>
           @if (notebooks && notebooksSorted()) {
-            @for (
-              notebook of notebooksSorted(); track trackByNotebooks($index,
-              notebook)) {
-              @if (notebook._id !== notebookId) {
-                <option [value]="notebook._id">
-                  {{ notebook.notebook_name }}
-                </option>
-              }
-            }
+          @for (
+          notebook of notebooksSorted(); track trackByNotebooks($index,
+          notebook)) {
+          @if (notebook._id !== notebookId) {
+          <option [value]="notebook._id">
+            {{ notebook.notebook_name }}
+          </option>
+          }
+          }
           }
         </select>
       </div>
@@ -31,25 +26,14 @@
     <div ngClass="button_row">
       <div ngClass="action">
         <div ngClass="move">
-          <button
-            mat-button
-            [disabled]="!formIsValid()"
-            color="secondary"
-            aria-label="Move Note button"
-            ngClass="contained medium"
-            (click)="submitHandler($event)"
-            >
+          <button mat-button [disabled]="!formIsValid()" color="secondary" aria-label="Move Note button"
+            ngClass="contained medium" (click)="submitHandler($event)">
             <span ngClass="icon_text"> Move Note </span>
           </button>
         </div>
         <div ngClass="cancel">
-          <button
-            mat-button
-            color="secondary"
-            aria-label="Edit notebook button"
-            ngClass="contained medium"
-            (click)="cancelHandler($event)"
-            >
+          <button mat-button color="secondary" aria-label="Edit notebook button" ngClass="contained medium"
+            (click)="cancelHandler($event)">
             <span ngClass="icon_text">
               <span ngClass="material-symbols-outlined button_icon white">
                 cancel
@@ -61,7 +45,7 @@
       </div>
     </div>
     @if (error().error_state) {
-      <ng-container #errorcontainer></ng-container>
+    <ng-container #errorcontainer></ng-container>
     }
   </div>
 </div>

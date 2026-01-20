@@ -1,11 +1,8 @@
 @if (!notebookLoaded()) {
-  <NotebookListHtml [notebook_item]="null" [notebookLoaded]="false" />
+<NotebookListHtml [notebook_item]="null" [notebookLoaded]="false" />
 }
 @if (notebookLoaded()) {
-  <a routerLink="/notebook/{{ notebook_item._id }}">
-    <NotebookListHtml
-    [notebook_item]="notebook_item"
-    [notebookLoaded]="notebookLoaded()"
-    />
+<a routerLink="/notebook/{{ notebook_item._id }}">
+  <NotebookListHtml [notebook_item]="notebook_item" [notebookLoaded]="notebookLoaded()" />
 </a>
 }

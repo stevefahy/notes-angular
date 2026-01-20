@@ -1,6 +1,5 @@
 import { Component, Input, OnInit, signal } from '@angular/core';
 import { ViewNoteMarkdownProps } from 'src/app/core/model/global';
-// import * as matter from 'gray-matter';
 import matter from 'gray-matter';
 import { Buffer } from 'buffer';
 import { Router } from '@angular/router';
@@ -26,7 +25,6 @@ import markdownItContainer from 'markdown-it-container';
 
 // Required for gray-matter library
 (window as any).global = window;
-// global.Buffer = global.Buffer || require('buffer').Buffer;
 global.Buffer = global.Buffer || Buffer;
 (window as any).process = {
   version: '',
@@ -40,35 +38,6 @@ hljs.registerLanguage('md', hjls_markdown);
 
 // MARKDOWN-IT
 
-// var md = require('markdown-it')({
-// var md = new MarkdownIt({
-//   html: true,
-//   linkify: true,
-//   typographer: true,
-//   langPrefix: 'language-',
-//   highlight: function (str: any, lang: any) {
-//     if (lang && hljs.getLanguage(lang)) {
-//       try {
-//         return (
-//           '<pre class="hljs"><code>' +
-//           hljs.highlight(str, { language: lang, ignoreIllegals: false }).value +
-//           '</code></pre><p>' +
-//           lang +
-//           '</p>'
-//         );
-//       } catch (__) {}
-//     }
-//     return (
-//       '<pre class="hljs"><code>' +
-//       md.utils.escapeHtml(str) +
-//       '</code></pre><p>' +
-//       lang +
-//       '</p>'
-//     );
-//   },
-// });
-
-// MARKDOWN-IT
 let md: MarkdownIt;
 md = new MarkdownIt({
   html: true,
@@ -85,7 +54,7 @@ md = new MarkdownIt({
           lang +
           '</p>'
         );
-      } catch (__) {}
+      } catch (__) { }
     }
     return (
       '<pre class="hljs"><code>' +
@@ -98,29 +67,6 @@ md = new MarkdownIt({
 });
 
 // MARKDOWN-IT PLUGINS
-
-// var emoji = require('markdown-it-emoji');
-// md.use(emoji, { defs: emoji_defs });
-// md.use(require('markdown-it-footnote'));
-// md.use(require('markdown-it-sub'));
-// md.use(require('markdown-it-sup'));
-// md.use(require('markdown-it-ins'));
-// md.use(require('markdown-it-mark'));
-// md.use(require('markdown-it-abbr'));
-// md.use(require('markdown-it-attrs'), {
-//   // optional, these are default options '{' and '}'
-//   leftDelimiter: 'xx',
-//   rightDelimiter: 'xx',
-//   allowedAttributes: [], // empty array = all attributes are allowed
-// });
-// md.use(require('markdown-it-task-checkbox'), {
-//   disabled: true,
-//   divWrap: true,
-//   divClass: 'checkbox',
-//   idPrefix: 'cbx_',
-//   ulClass: 'task-list',
-//   liClass: 'task-list-item',
-// });
 
 md.use(markdownItEmoji, { defs: emoji_defs });
 md.use(markdownItFootnote);
@@ -330,7 +276,6 @@ md.renderer.rules['footnote_ref'] = function (
 // CUSTOM CONTAINERS
 
 // Custom container that can have styles added
-// md.use(require('markdown-it-container'), 'custom', {
 md.use(markdownItContainer, 'custom', {
   validate: function (params: any) {
     return params.trim().match(/^custom\s+(.*)$/);
@@ -349,7 +294,7 @@ md.use(markdownItContainer, 'custom', {
 
 // Custom container that can have css added
 // md.use(require('markdown-it-container'), 'custom-css', {
-md.use(markdownItContainer), 'custom-css', {
+md.use(markdownItContainer, 'custom-css', {
   validate: function (params: any) {
     return params.trim().match(/^custom-css\s+(.*)$/);
   },
@@ -363,17 +308,16 @@ md.use(markdownItContainer), 'custom-css', {
       return '</span>\n';
     }
   },
-};
+});
 
 @Component({
-    selector: 'ViewNoteMarkdown',
-    templateUrl: './viewnote-markdown.component.html',
-    styleUrls: ['./viewnote-markdown.component.scss'],
-    standalone: false
+  selector: 'ViewNoteMarkdown',
+  templateUrl: './viewnote-markdown.component.html',
+  styleUrls: ['./viewnote-markdown.component.scss'],
+  standalone: false
 })
 export class ViewnoteMarkdownComponent
-  implements ViewNoteMarkdownProps, OnInit
-{
+  implements ViewNoteMarkdownProps, OnInit {
   @Input()
   set viewText(val: string) {
     this.content = matter(val).content;
@@ -402,5 +346,5 @@ export class ViewnoteMarkdownComponent
   contextView = signal<string>('');
   isLoaded = signal<boolean>(false);
 
-  ngOnInit(): void {}
+  ngOnInit(): void { }
 }
