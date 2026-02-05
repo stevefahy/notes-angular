@@ -1,7 +1,7 @@
 export interface Global {}
 
 import { TDateISO } from './date';
-import {
+import type {
   DeleteResult,
   InsertOneResult,
   UpdateResult,
@@ -178,13 +178,13 @@ export interface NotebookAddEdit {
   onCancel: () => void;
   addNotebook?: (
     notebook_name: string,
-    notebook_cover: NotebookCoverType
+    notebook_cover: NotebookCoverType,
   ) => void;
   editNotebook?: (
     notebook_id: string,
     notebook_name: string,
     notebook_cover: NotebookCoverType,
-    notebook_updated: string
+    notebook_updated: string,
   ) => void;
 }
 
@@ -373,13 +373,13 @@ export type Logout = LogoutError | LogoutSuccess;
 
 export type onLoginT = (
   email: string,
-  password: string
+  password: string,
 ) => Promise<AuthAuthenticate> | void;
 export type onRegisterT = (
   username: string,
   email: string,
   password: string,
-  framework: string
+  framework: string,
 ) => Promise<AuthSignup> | void;
 
 export interface AuthContextType {
@@ -404,7 +404,7 @@ export interface IAuthContext {
     username: string,
     email: string,
     password: string,
-    framework: string
+    framework: string,
   ) => Promise<AuthSignup>;
   onLogout: () => void;
 }

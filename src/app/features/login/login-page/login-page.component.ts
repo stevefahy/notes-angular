@@ -7,8 +7,13 @@ import {
   ViewContainerRef,
   ComponentRef,
   signal,
+  inject,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
 import {
   AlertInterface,
   IAuthContext,
@@ -25,12 +30,20 @@ const AC = APPLICATION_CONSTANTS;
 
 @Component({
     selector: 'LoginPage',
+    standalone: true,
+    imports: [
+      CommonModule,
+      FormsModule,
+      RouterModule,
+      MatCardModule,
+      MatButtonModule,
+    ],
     templateUrl: './login-page.component.html',
     styleUrls: ['./login-page.component.scss'],
-    standalone: false
 })
 export class LoginPageComponent implements OnInit, OnDestroy {
-  constructor(private authService: AuthService, private router: Router) {}
+  private authService = inject(AuthService);
+  private router = inject(Router);
   @ViewChild('usernameInputRef')
   usernameInputRef!: ElementRef<HTMLInputElement>;
   @ViewChild('emailInputRef') emailInputRef!: ElementRef<HTMLInputElement>;

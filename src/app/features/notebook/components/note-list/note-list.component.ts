@@ -9,6 +9,9 @@ import {
   ChangeDetectionStrategy,
   OnDestroy,
 } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { MatCardModule } from '@angular/material/card';
 import {
   Note,
   NotesProps,
@@ -18,13 +21,15 @@ import {
 import { toObservable } from '@angular/core/rxjs-interop';
 import { Observable, of, Subject, takeUntil } from 'rxjs';
 import DateFormat from 'src/app/core/lib/date-format';
+import { ViewnotethumbComponent } from '../../../viewnote/components/viewnotethumb/viewnotethumb.component';
 
 @Component({
     selector: 'NoteList',
+    standalone: true,
+    imports: [CommonModule, RouterModule, MatCardModule, ViewnotethumbComponent],
     templateUrl: './note-list.component.html',
     styleUrls: ['./note-list.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
 })
 export class NoteListComponent implements NotesProps, OnInit, OnDestroy {
   @Input()

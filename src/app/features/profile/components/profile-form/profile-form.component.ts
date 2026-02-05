@@ -9,6 +9,9 @@ import {
   ComponentRef,
   OnDestroy,
 } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
 import {
   AlertInterface,
   ProfileFormProps,
@@ -24,9 +27,10 @@ const AC = APPLICATION_CONSTANTS;
 
 @Component({
     selector: 'ProfileForm',
+    standalone: true,
+    imports: [CommonModule, FormsModule, MatButtonModule],
     templateUrl: './profile-form.component.html',
     styleUrls: ['./profile-form.component.scss'],
-    standalone: false
 })
 export class ProfileFormComponent
   implements ProfileFormProps, OnInit, OnDestroy

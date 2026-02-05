@@ -3,27 +3,38 @@ import {
   OnInit,
   Input,
   signal,
-  Inject,
+  inject,
   ViewContainerRef,
   ComponentRef,
   ViewChild,
   OnDestroy,
 } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { MatDialogModule, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import {
   AlertInterface,
   Notebook,
   SelectNotebookFormProps,
 } from 'src/app/core/model/global';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Observable, of, Subject, takeUntil } from 'rxjs';
 import { ErrorAlertComponent } from '../../../../core/components/ui/error-alert/error-alert.component';
 import { toObservable } from '@angular/core/rxjs-interop';
 
 @Component({
     selector: 'SelectNotebookForm',
+    standalone: true,
+    imports: [
+      CommonModule,
+      FormsModule,
+      MatDialogModule,
+      MatButtonModule,
+      MatIconModule,
+    ],
     templateUrl: './select-notebook-form.component.html',
     styleUrls: ['./select-notebook-form.component.scss'],
-    standalone: false
 })
 export class SelectNotebookFormComponent
   implements SelectNotebookFormProps, OnInit, OnDestroy
@@ -49,15 +60,12 @@ export class SelectNotebookFormComponent
   error$ = toObservable(this.error);
   notebooks$: Observable<Notebook[]>;
 
-  constructor(
-    @Inject(MAT_DIALOG_DATA)
-    public data: {
-      notebooks: Notebook[];
-      onCancel: () => void;
-      moveNotes: (notebook_id: string) => void;
-      notebookId: string;
-    }
-  ) {}
+  data = inject(MAT_DIALOG_DATA) as {
+    notebooks: Notebook[];
+    onCancel: () => void;
+    moveNotes: (notebook_id: string) => void;
+    notebookId: string;
+  };
 
   onDestroy$: Subject<void> = new Subject();
 

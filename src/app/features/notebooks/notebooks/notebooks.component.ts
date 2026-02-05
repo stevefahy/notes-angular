@@ -1,16 +1,20 @@
-import { Component, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { GetNotebooks, IAuthContext } from '../../../core/model/global';
 import { AuthService } from '../../../core/services/auth.service';
 import { Store } from '@ngrx/store';
 import { NotificationActions } from '../../../store/actions/notification.actions';
 import { getNotebooks } from '../../../core/helpers/getNotebooks';
 import { Subject, takeUntil } from 'rxjs';
+import { LoadingScreenComponent } from '../../../core/components/ui/loading-screen/loading-screen.component';
+import { NotebookslistComponent } from '../components/notebookslist/notebookslist.component';
 
 @Component({
     selector: 'Notebooks',
+    standalone: true,
+    imports: [CommonModule, LoadingScreenComponent, NotebookslistComponent],
     templateUrl: './notebooks.component.html',
     styleUrls: ['./notebooks.component.scss'],
-    standalone: false
 })
 export class NotebooksComponent implements OnInit, OnDestroy {
   notebooksLoaded = signal<boolean>(false);
@@ -19,7 +23,8 @@ export class NotebooksComponent implements OnInit, OnDestroy {
   loading: boolean | null;
   token: string | null;
 
-  constructor(private authService: AuthService, private store: Store) {}
+  private authService = inject(AuthService);
+  private store = inject(Store);
 
   onDestroy$: Subject<void> = new Subject();
 

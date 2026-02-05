@@ -4,7 +4,11 @@ import {
   OnInit,
   OnDestroy,
   ChangeDetectionStrategy,
+  inject,
 } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import {
   IAuthContext,
   Notebook,
@@ -16,8 +20,7 @@ import { Store } from '@ngrx/store';
 import { NotificationActions } from '../../../store/actions/notification.actions';
 import { NotebookEditActions } from '../../../store/actions/notebook_edit.actions';
 import { selectEditing } from 'src/app/store/selectors/notebook_edit.selector';
-import { ActivatedRoute } from '@angular/router';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { getNotes } from '../../../core/helpers/getNotes';
 import { getNotebook } from '../../../core/helpers/getNotebook';
@@ -35,22 +38,31 @@ import {
 } from '@angular/material/dialog';
 import { AddNotebookFormComponent } from '../../notebooks/components/add-notebook-form/add-notebook-form.component';
 import { Subscription, Subject, takeUntil } from 'rxjs';
+import { LoadingScreenComponent } from '../../../core/components/ui/loading-screen/loading-screen.component';
+import { FooterComponent } from '../../../core/components/footer/footer.component';
+import { NoteListComponent } from '../components/note-list/note-list.component';
 
 @Component({
     selector: 'Notebook',
+    standalone: true,
+    imports: [
+      CommonModule,
+      MatButtonModule,
+      MatIconModule,
+      LoadingScreenComponent,
+      FooterComponent,
+      NoteListComponent,
+    ],
     templateUrl: './notebook.component.html',
     styleUrls: ['./notebook.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
 })
 export class NotebookComponent implements OnInit, OnDestroy {
-  constructor(
-    private activatedRoute: ActivatedRoute,
-    private authService: AuthService,
-    private store: Store,
-    private router: Router,
-    public dialog: MatDialog
-  ) {}
+  private activatedRoute = inject(ActivatedRoute);
+  private authService = inject(AuthService);
+  private store = inject(Store);
+  private router = inject(Router);
+  public dialog = inject(MatDialog);
 
   dialogRefSelectNotebook: MatDialogRef<SelectNotebookFormComponent, any>;
   dialogRefEditNotebook: MatDialogRef<AddNotebookFormComponent, any>;
@@ -83,13 +95,9 @@ export class NotebookComponent implements OnInit, OnDestroy {
 
   loadingTimer: NodeJS.Timeout;
 
-  editing$: Subscription;
-
   onDestroy$: Subject<void> = new Subject();
 
   ngOnDestroy(): void {
-    this.editing$.unsubscribe();
-
     this.onDestroy$.next();
     this.onDestroy$.complete();
   }
@@ -108,11 +116,13 @@ export class NotebookComponent implements OnInit, OnDestroy {
         this.updateContext(res);
       });
 
-    this.editing$ = this.store.select(selectEditing).subscribe((editing) => {
-      if (editing.status === true) {
-        this.editNotebookBtnHandler();
-      }
-    });
+    this.store.select(selectEditing)
+      .pipe(takeUntil(this.onDestroy$))
+      .subscribe((editing) => {
+        if (editing.status === true) {
+          this.editNotebookBtnHandler();
+        }
+      });
 
     this.notesLoadedDelay$
       .pipe(takeUntil(this.onDestroy$))

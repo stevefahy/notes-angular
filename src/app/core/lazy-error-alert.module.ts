@@ -3,8 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ErrorAlertComponent } from './components/ui/error-alert/error-alert.component';
 
 @NgModule({
-  declarations: [ErrorAlertComponent],
-  imports: [CommonModule],
+  imports: [CommonModule, ErrorAlertComponent],
 })
 export class LazyLoadedModule {
   public static components = {

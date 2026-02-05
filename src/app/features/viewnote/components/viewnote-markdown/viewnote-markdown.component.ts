@@ -1,8 +1,10 @@
-import { Component, Input, OnInit, signal } from '@angular/core';
+import { Component, Input, OnInit, signal, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { ViewNoteMarkdownProps } from 'src/app/core/model/global';
+import { EscapeHtmlPipe } from '../../../../core/pipes/keep-html.pipe';
 import matter from 'gray-matter';
 import { Buffer } from 'buffer';
-import { Router } from '@angular/router';
 import emoji_defs from 'src/app/core/lib/emoji_definitions';
 ('../../../core/lib/emoji_definitions');
 import markdownItAnchor from 'markdown-it-anchor';
@@ -312,9 +314,10 @@ md.use(markdownItContainer, 'custom-css', {
 
 @Component({
   selector: 'ViewNoteMarkdown',
+  standalone: true,
+  imports: [CommonModule, EscapeHtmlPipe],
   templateUrl: './viewnote-markdown.component.html',
   styleUrls: ['./viewnote-markdown.component.scss'],
-  standalone: false
 })
 export class ViewnoteMarkdownComponent
   implements ViewNoteMarkdownProps, OnInit {
@@ -336,7 +339,9 @@ export class ViewnoteMarkdownComponent
   outHtml;
   currenturl;
 
-  constructor(private router: Router) {
+  private router = inject(Router);
+
+  constructor() {
     this.currenturl = this.router.url;
     this.markdown = md;
     this.outHtml = this.markdown.render(this.contextView());

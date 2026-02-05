@@ -1,4 +1,7 @@
-import { Component, signal, OnInit, Input, OnDestroy } from '@angular/core';
+import { Component, signal, OnInit, Input, OnDestroy, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import {
   GetNotebooks,
   IAuthContext,
@@ -15,12 +18,23 @@ import {
   MatDialogRef,
 } from '@angular/material/dialog';
 import { Subject, takeUntil } from 'rxjs';
+import { LoadingScreenComponent } from '../../../../core/components/ui/loading-screen/loading-screen.component';
+import { FooterComponent } from '../../../../core/components/footer/footer.component';
+import { NotebookListItemComponent } from '../notebook-list-item/notebook-list-item.component';
 
 @Component({
     selector: 'NotebooksList',
+    standalone: true,
+    imports: [
+      CommonModule,
+      MatButtonModule,
+      MatIconModule,
+      LoadingScreenComponent,
+      FooterComponent,
+      NotebookListItemComponent,
+    ],
     templateUrl: './notebookslist.component.html',
     styleUrls: ['../../styles_shared/notebook-list-shared-css.scss'],
-    standalone: false
 })
 export class NotebookslistComponent implements OnInit, OnDestroy {
   @Input() notebooks: GetNotebooks;
@@ -34,11 +48,9 @@ export class NotebookslistComponent implements OnInit, OnDestroy {
 
   dialogRef: MatDialogRef<AddNotebookFormComponent, any>;
 
-  constructor(
-    private authService: AuthService,
-    private store: Store,
-    public dialog: MatDialog
-  ) {}
+  private authService = inject(AuthService);
+  private store = inject(Store);
+  public dialog = inject(MatDialog);
 
   onDestroy$: Subject<void> = new Subject();
 

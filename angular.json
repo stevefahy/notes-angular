@@ -30,7 +30,18 @@
             "allowedCommonJsDependencies": [
               "matter",
               "buffer",
-              "gray-matter"
+              "gray-matter",
+              "markdown-it",
+              "markdown-it-emoji",
+              "markdown-it-footnote",
+              "markdown-it-sub",
+              "markdown-it-sup",
+              "markdown-it-ins",
+              "markdown-it-mark",
+              "markdown-it-abbr",
+              "markdown-it-attrs",
+              "markdown-it-task-checkbox",
+              "markdown-it-container"
             ],
             "browser": "src/main.ts"
           },

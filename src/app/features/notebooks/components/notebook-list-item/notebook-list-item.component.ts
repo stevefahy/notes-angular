@@ -6,14 +6,18 @@ import {
   OnChanges,
   SimpleChanges,
 } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { Notebook, NotebookItem } from 'src/app/core/model/global';
 import DateFormat from '../../../../core/lib/date-format';
+import { NotebookListHtmlComponent } from '../notebook-list-html/notebook-list-html.component';
 
 @Component({
     selector: 'NotebookListItem',
+    standalone: true,
+    imports: [CommonModule, RouterModule, NotebookListHtmlComponent],
     templateUrl: './notebook-list-item.component.html',
     styleUrls: ['../../styles_shared/notebook-list-shared-css.scss'],
-    standalone: false
 })
 export class NotebookListItemComponent
   implements NotebookItem, OnInit, OnChanges

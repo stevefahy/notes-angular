@@ -5,6 +5,9 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { ViewnoteMarkdownComponent } from '../viewnote-markdown/viewnote-markdown.component';
 import matter from 'gray-matter';
 import { Buffer } from 'buffer';
 
@@ -17,10 +20,11 @@ global.Buffer = global.Buffer || Buffer;
 
 @Component({
   selector: 'ViewNoteThumb',
+  standalone: true,
+  imports: [CommonModule, NgxSkeletonLoaderModule, ViewnoteMarkdownComponent],
   templateUrl: './viewnotethumb.component.html',
   styleUrls: ['./viewnotethumb.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false
 })
 export class ViewnotethumbComponent implements OnInit {
   @Input()

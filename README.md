@@ -16,6 +16,8 @@ Open [http://localhost:4200](http://localhost:4200) with your browser to see the
 Run `ng build` for a production build.`. 
 ```
 
+The production files are in /dist/notes-angular-public/browser
+
 ## About
 
 This is a note taking app. The notes can be written using [Markdown](https://www.markdownguide.org/).

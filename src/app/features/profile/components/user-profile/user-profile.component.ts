@@ -1,4 +1,5 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../../core/services/auth.service';
 import { IAuthContext, IAuthDetails } from 'src/app/core/model/global';
 import { Store } from '@ngrx/store';
@@ -6,12 +7,15 @@ import { NotificationActions } from '../../../../store/actions/notification.acti
 import { changePassword } from 'src/app/core/helpers/changePassword';
 import { changeUsername } from 'src/app/core/helpers/changeUsername';
 import { Subject, takeUntil } from 'rxjs';
+import { LoadingScreenComponent } from '../../../../core/components/ui/loading-screen/loading-screen.component';
+import { ProfileFormComponent } from '../profile-form/profile-form.component';
 
 @Component({
     selector: 'UserProfile',
+    standalone: true,
+    imports: [CommonModule, LoadingScreenComponent, ProfileFormComponent],
     templateUrl: './user-profile.component.html',
     styleUrls: ['./user-profile.component.scss'],
-    standalone: false
 })
 export class UserProfileComponent implements OnInit, OnDestroy {
   loading: boolean | null;
@@ -20,7 +24,8 @@ export class UserProfileComponent implements OnInit, OnDestroy {
   details: IAuthDetails | null;
   onLogout: () => void;
 
-  constructor(private authService: AuthService, private store: Store) {}
+  private authService = inject(AuthService);
+  private store = inject(Store);
 
   onDestroy$: Subject<void> = new Subject();
 

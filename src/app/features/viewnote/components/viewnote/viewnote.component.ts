@@ -1,5 +1,9 @@
 import { Component, Input, OnInit, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatCardModule } from '@angular/material/card';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { NoteEditorView } from 'src/app/core/model/global';
+import { ViewnoteMarkdownComponent } from '../viewnote-markdown/viewnote-markdown.component';
 import matter from 'gray-matter';
 import { Buffer } from 'buffer';
 
@@ -12,9 +16,10 @@ global.Buffer = global.Buffer || Buffer;
 
 @Component({
   selector: 'ViewNote',
+  standalone: true,
+  imports: [CommonModule, MatCardModule, NgxSkeletonLoaderModule, ViewnoteMarkdownComponent],
   templateUrl: './viewnote.component.html',
   styleUrls: ['./viewnote.component.scss'],
-  standalone: false
 })
 export class ViewnoteComponent implements NoteEditorView, OnInit {
   @Input() visible: boolean;

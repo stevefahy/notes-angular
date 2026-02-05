@@ -1,4 +1,4 @@
-import { Component, signal, OnDestroy, OnInit } from '@angular/core';
+import { Component, signal, OnDestroy, OnInit, inject } from '@angular/core';
 import {
   NotificationStatus,
   NotificationInterface,
@@ -9,6 +9,10 @@ import { selectSnack } from 'src/app/store/selectors/snack.selector';
 import { Snack } from 'src/app/store/models/snack.model';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SnackbarViewComponent } from '../ui/snackbar-view/snackbar-view.component';
+import { CommonModule } from '@angular/common';
+import { MainNavigationComponent } from '../main-navigation/main-navigation.component';
+import { NotificationViewComponent } from '../ui/notification-view/notification-view.component';
+import { Subject, takeUntil } from 'rxjs';
 
 // Set the CSS variable --jsvh (Javascript Vertical Height)
 // This var is used because on mobile browsers the css: calc(100vh)
@@ -26,20 +30,36 @@ const setScreenHeight = () => {
   document &&
     document.documentElement.style.setProperty(
       '--jsheader-height',
-      `${header_height}`
+      `${header_height}`,
     );
 };
 
 @Component({
-    selector: 'Layout',
-    templateUrl: './layout.component.html',
-    styleUrls: ['./layout.component.scss'],
-    standalone: false
+  selector: 'Layout',
+  standalone: true,
+  imports: [CommonModule, MainNavigationComponent, NotificationViewComponent],
+  templateUrl: './layout.component.html',
+  styleUrls: ['./layout.component.scss'],
 })
 export class LayoutComponent implements OnDestroy, OnInit {
-  constructor(private store: Store, private _snackBar: MatSnackBar) {}
+  private store = inject(Store);
+  private _snackBar = inject(MatSnackBar);
+  private onDestroy$ = new Subject<void>();
+
+  private resizeListener: () => void;
 
   ngOnDestroy(): void {
+    // Remove window resize listener
+    if (this.resizeListener && window) {
+      window.removeEventListener('resize', this.resizeListener);
+    }
+
+    // Clear notification timer
+    if (this.timer_notification) {
+      clearTimeout(this.timer_notification);
+    }
+
+    // Unsubscribe from store observables
     this.notification$.unsubscribe();
     this.snack$.unsubscribe();
   }
@@ -51,10 +71,13 @@ export class LayoutComponent implements OnDestroy, OnInit {
     }, 0);
 
     // Set the screenHeight on window resize (includes orientation change)
-    window &&
-      window.addEventListener('resize', () => {
-        setScreenHeight();
-      });
+    this.resizeListener = () => {
+      setScreenHeight();
+    };
+
+    if (window) {
+      window.addEventListener('resize', this.resizeListener);
+    }
   }
 
   status = signal<NotificationStatus>(null);
@@ -67,6 +90,10 @@ export class LayoutComponent implements OnDestroy, OnInit {
     this.status.set(res.n_status);
     if (this.status() !== null) {
       this.notification.set(res);
+      // Clear existing timer before setting a new one
+      if (this.timer_notification) {
+        clearTimeout(this.timer_notification);
+      }
       this.timer_notification = setTimeout(() => {
         this.status.set(null);
         clearTimeout(this.timer_notification);

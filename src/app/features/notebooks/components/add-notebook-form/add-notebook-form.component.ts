@@ -8,6 +8,10 @@ import {
   ComponentRef,
   OnDestroy,
 } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { MatDialogModule, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
 import {
   NotebookCoverType,
   NotebookAddEdit,
@@ -18,7 +22,6 @@ import {
 } from 'src/app/core/model/global';
 import APPLICATION_CONSTANTS from 'src/app/core/application-constants/application-constants';
 import { FolderOptions } from '../../../../core/lib/folder-options';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { Subject, takeUntil } from 'rxjs';
 import { ErrorAlertComponent } from '../../../../core/components/ui/error-alert/error-alert.component';
@@ -27,9 +30,15 @@ const AC = APPLICATION_CONSTANTS;
 
 @Component({
     selector: 'AddNotebookForm',
+    standalone: true,
+    imports: [
+      CommonModule,
+      FormsModule,
+      MatDialogModule,
+      MatButtonModule,
+    ],
     templateUrl: './add-notebook-form.component.html',
     styleUrls: ['./add-notebook-form.component.scss'],
-    standalone: false
 })
 export class AddNotebookFormComponent
   implements NotebookAddEdit, OnInit, OnDestroy
