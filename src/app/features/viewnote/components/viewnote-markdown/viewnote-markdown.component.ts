@@ -42,10 +42,11 @@ hljs.registerLanguage('md', hjls_markdown);
 
 let md: MarkdownIt;
 md = new MarkdownIt({
-  html: true,
+  html: false,
   linkify: true,
   typographer: true,
   langPrefix: 'language-',
+  breaks: false,
   highlight: function (str: any, lang: any) {
     if (lang && hljs.getLanguage(lang)) {
       try {
@@ -56,7 +57,7 @@ md = new MarkdownIt({
           lang +
           '</p>'
         );
-      } catch (__) { }
+      } catch (__) {}
     }
     return (
       '<pre class="hljs"><code>' +
@@ -66,6 +67,25 @@ md = new MarkdownIt({
       '</p>'
     );
   },
+});
+
+// Add a ruler to recognize <br> as a hardbreak
+md.inline.ruler.push('html_br', (state, silent) => {
+  if (state.src.slice(state.pos, state.pos + 4) === '<br>') {
+    if (!silent) {
+      state.push('hardbreak', 'br', 0);
+    }
+    state.pos += 4;
+    return true;
+  }
+  if (state.src.slice(state.pos, state.pos + 5) === '<br/>') {
+    if (!silent) {
+      state.push('hardbreak', 'br', 0);
+    }
+    state.pos += 5;
+    return true;
+  }
+  return false;
 });
 
 // MARKDOWN-IT PLUGINS
@@ -155,7 +175,7 @@ md.renderer.rules['link_open'] = function (
   idx: any,
   options: any,
   env: any,
-  slf: any
+  slf: any,
 ) {
   var aIndex = tokens[idx].attrIndex('target');
   var hIndex = tokens[idx].attrIndex('href');
@@ -186,7 +206,7 @@ md.renderer.rules['link_close'] = function (
   idx: any,
   options: any,
   env: any,
-  slf: any
+  slf: any,
 ) {
   var hIndex = tokens[idx].attrIndex('href');
   if (hIndex >= 0) {
@@ -211,13 +231,13 @@ md.renderer.rules.image = function (
   idx: any,
   options: any,
   env: any,
-  slf: any
+  slf: any,
 ) {
   var token = tokens[idx];
   token.attrs![token.attrIndex('alt')][1] = slf.renderInlineAsText(
     token.children!,
     options,
-    env
+    env,
   );
   const size = getSize(token.attrs![token.attrIndex('alt')][1]);
   token.attrSet('width', size.width + 'px');
@@ -233,7 +253,7 @@ md.renderer.rules['footnote_anchor'] = function (
   idx: any,
   options: any,
   env: any,
-  slf: any
+  slf: any,
 ) {
   var id = slf.rules.footnote_anchor_name(tokens, idx, options, env, slf);
   if (tokens[idx].meta.subId > 0) {
@@ -255,7 +275,7 @@ md.renderer.rules['footnote_ref'] = function (
   idx: any,
   options: any,
   env: any,
-  slf: any
+  slf: any,
 ) {
   var id = slf.rules.footnote_anchor_name(tokens, idx, options, env, slf);
   var caption = slf.rules.footnote_caption(tokens, idx, options, env, slf);
@@ -320,7 +340,8 @@ md.use(markdownItContainer, 'custom-css', {
   styleUrls: ['./viewnote-markdown.component.scss'],
 })
 export class ViewnoteMarkdownComponent
-  implements ViewNoteMarkdownProps, OnInit {
+  implements ViewNoteMarkdownProps, OnInit
+{
   @Input()
   set viewText(val: string) {
     this.content = matter(val).content;
@@ -351,5 +372,5 @@ export class ViewnoteMarkdownComponent
   contextView = signal<string>('');
   isLoaded = signal<boolean>(false);
 
-  ngOnInit(): void { }
+  ngOnInit(): void {}
 }
