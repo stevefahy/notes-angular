@@ -103,7 +103,7 @@ md.use(markdownItAttrs, {
   allowedAttributes: [],
 });
 md.use(markdownItTaskCheckbox, {
-  disabled: true,
+  disabled: false,
   divWrap: true,
   divClass: 'checkbox',
   idPrefix: 'cbx_',
@@ -344,6 +344,7 @@ export class ViewnoteMarkdownComponent
 {
   @Input()
   set viewText(val: string) {
+    this.fullNoteText = val;
     this.content = matter(val).content;
     if (this.content !== this.contextView()) {
       this.contextView.update((prev) => this.content);
@@ -369,8 +370,83 @@ export class ViewnoteMarkdownComponent
   }
 
   content: string;
+  fullNoteText: string = '';
   contextView = signal<string>('');
   isLoaded = signal<boolean>(false);
 
+  // Task line regex to match GFM task list lines
+  private readonly TASK_LINE_RE = /^\s*[-*+]\s+\[[xX \u00A0]\s*\]/;
+
   ngOnInit(): void {}
+
+  onCheckboxClick(event: MouseEvent): void {
+    // Only process if update callback exists (not read-only)
+    if (!this.updatedViewText) {
+      return;
+    }
+
+    const target = event.target as HTMLElement;
+    
+    // Check if target is a checkbox input
+    if (target.tagName !== 'INPUT' || (target as HTMLInputElement).type !== 'checkbox') {
+      return;
+    }
+
+    const checkbox = target as HTMLInputElement;
+    const id = checkbox.id;
+
+    // Verify it's a task checkbox
+    if (!id || !id.startsWith('cbx_')) {
+      return;
+    }
+
+    // Parse task index from checkbox ID (cbx_3 -> index 3)
+    const taskIndex = parseInt(id.slice(4), 10); // 4 = length of 'cbx_'
+    if (isNaN(taskIndex) || taskIndex < 0) {
+      return;
+    }
+
+    const checked = checkbox.checked;
+    this.updateCheckboxInMarkdown(taskIndex, checked);
+  }
+
+  private updateCheckboxInMarkdown(taskIndex: number, checked: boolean): void {
+    if (!this.fullNoteText || !this.updatedViewText) {
+      return;
+    }
+
+    // Parse frontmatter if present
+    const parsed = matter(this.fullNoteText);
+    const contentToUpdate = parsed.content || this.fullNoteText;
+
+    // Split content into lines
+    const lines = contentToUpdate.split('\n');
+    let nth = 0;
+
+    // Find the Nth task line and update it
+    for (let i = 0; i < lines.length; i++) {
+      if (this.TASK_LINE_RE.test(lines[i])) {
+        if (nth === taskIndex) {
+          // Replace checkbox state in the line
+          lines[i] = lines[i].replace(
+            /\[\s*(x|\s)\s*\]/i,
+            checked ? '[x]' : '[ ]'
+          );
+          
+          // Reconstruct content with updated line
+          const updatedContent = lines.join('\n');
+          
+          // Preserve frontmatter if it exists
+          const updatedFull = Object.keys(parsed.data).length > 0
+            ? matter.stringify(updatedContent, parsed.data)
+            : updatedContent;
+
+          // Call callback with updated full note text
+          this.updatedViewText(updatedFull);
+          return;
+        }
+        nth++;
+      }
+    }
+  }
 }

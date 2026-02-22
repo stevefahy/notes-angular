@@ -22,3 +22,9 @@
   display: inline-block;
   vertical-align: top;
 }
+
+// Read-only styling for checkboxes when update callback is not provided
+.md-readonly .task-list input[type="checkbox"] {
+  pointer-events: none;
+  cursor: default;
+}

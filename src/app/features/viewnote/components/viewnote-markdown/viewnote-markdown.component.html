@@ -1,1 +1,6 @@
-<span [innerHTML]="outHtml | keepHtml"></span>
+<div 
+  class="md-rendered"
+  [class.md-readonly]="!updatedViewText"
+  (click)="onCheckboxClick($event)">
+  <span [innerHTML]="outHtml | keepHtml"></span>
+</div>
