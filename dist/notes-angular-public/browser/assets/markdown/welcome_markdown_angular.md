@@ -179,9 +179,9 @@ This image links to a previous location in the document, the Links header:
 
 [![DojoCat][2]][1]
 
-<!-- The link we want our image link to point to -->
+[//]: # (The link we want our image link to point to) 
 [1]: #links
-<!-- The image url we want to use for our img tag source -->
+[//]: # (The image url we want to use for our img tag source) 
 [2]: https://octodex.github.com/images/dojocat.jpg "The Dojo Cat"
 
 Images are responsive to the screen size.

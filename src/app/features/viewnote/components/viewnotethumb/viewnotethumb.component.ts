@@ -8,15 +8,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { ViewnoteMarkdownComponent } from '../viewnote-markdown/viewnote-markdown.component';
-import matter from 'gray-matter';
-import { Buffer } from 'buffer';
-
-// Required for gray-matter library
-(window as any).global = window;
-global.Buffer = global.Buffer || Buffer;
-(window as any).process = {
-  version: '',
-};
+import fm from 'front-matter';
 
 @Component({
   selector: 'ViewNoteThumb',
@@ -29,7 +21,7 @@ global.Buffer = global.Buffer || Buffer;
 export class ViewnotethumbComponent implements OnInit {
   @Input()
   set text(val: string) {
-    this.content = matter(val).content;
+    this.content = fm(val).body;
     this.hideSkeleton();
   }
   @Input() updatedViewText: (updatedEdit: string) => void;

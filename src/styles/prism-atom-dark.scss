@@ -5,7 +5,9 @@
  */
 
 code[class*="language-"],
-pre[class*="language-"] {
+pre[class*="language-"],
+pre.hljs,
+pre.hljs code {
   color: #c5c8c6;
   text-shadow: 0 1px rgba(0, 0, 0, 0.3);
   font-family: Inconsolata, Monaco, Consolas, "Courier New", Courier, monospace;
@@ -30,7 +32,8 @@ pre[class*="language-"] {
 }
 
 /* Code blocks */
-pre[class*="language-"] {
+pre[class*="language-"],
+pre.hljs {
   padding: 1em;
   margin: 0.5em 0;
   overflow: auto;
@@ -38,7 +41,8 @@ pre[class*="language-"] {
 }
 
 :not(pre) > code[class*="language-"],
-pre[class*="language-"] {
+pre[class*="language-"],
+pre.hljs {
   background: #1d1f21;
 }
 

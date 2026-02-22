@@ -3,10 +3,9 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ViewNoteMarkdownProps } from 'src/app/core/model/global';
 import { EscapeHtmlPipe } from '../../../../core/pipes/keep-html.pipe';
-import matter from 'gray-matter';
-import { Buffer } from 'buffer';
+import fm from 'front-matter';
 import emoji_defs from 'src/app/core/lib/emoji_definitions';
-('../../../core/lib/emoji_definitions');
+import { stringifyFrontMatter } from 'src/app/core/lib/front-matter-helper';
 import markdownItAnchor from 'markdown-it-anchor';
 import hljs from 'highlight.js/lib/core';
 import hjls_js from 'highlight.js/lib/languages/javascript';
@@ -25,13 +24,6 @@ import markdownItAttrs from 'markdown-it-attrs';
 import markdownItTaskCheckbox from 'markdown-it-task-checkbox';
 import markdownItContainer from 'markdown-it-container';
 
-// Required for gray-matter library
-(window as any).global = window;
-global.Buffer = global.Buffer || Buffer;
-(window as any).process = {
-  version: '',
-};
-
 // HIGHLIGHTJS
 hljs.registerLanguage('javascript', hjls_js);
 hljs.registerLanguage('css', hjls_css);
@@ -47,7 +39,7 @@ md = new MarkdownIt({
   typographer: true,
   langPrefix: 'language-',
   breaks: false,
-  highlight: function (str: any, lang: any) {
+  highlight: function (str: string, lang: string) {
     if (lang && hljs.getLanguage(lang)) {
       try {
         return (
@@ -63,7 +55,7 @@ md = new MarkdownIt({
       '<pre class="hljs"><code>' +
       md.utils.escapeHtml(str) +
       '</code></pre><p>' +
-      lang +
+      (lang || '') +
       '</p>'
     );
   },
@@ -345,7 +337,7 @@ export class ViewnoteMarkdownComponent
   @Input()
   set viewText(val: string) {
     this.fullNoteText = val;
-    this.content = matter(val).content;
+    this.content = fm(val).body;
     if (this.content !== this.contextView()) {
       this.contextView.update((prev) => this.content);
       this.isLoaded.set(true);
@@ -416,8 +408,8 @@ export class ViewnoteMarkdownComponent
     }
 
     // Parse frontmatter if present
-    const parsed = matter(this.fullNoteText);
-    const contentToUpdate = parsed.content || this.fullNoteText;
+    const parsed = fm(this.fullNoteText);
+    const contentToUpdate = parsed.body || this.fullNoteText;
 
     // Split content into lines
     const lines = contentToUpdate.split('\n');
@@ -437,9 +429,11 @@ export class ViewnoteMarkdownComponent
           const updatedContent = lines.join('\n');
           
           // Preserve frontmatter if it exists
-          const updatedFull = Object.keys(parsed.data).length > 0
-            ? matter.stringify(updatedContent, parsed.data)
-            : updatedContent;
+          const attrs = parsed.attributes as Record<string, unknown>;
+          const updatedFull =
+            attrs && typeof attrs === 'object' && Object.keys(attrs).length > 0
+              ? stringifyFrontMatter(updatedContent, attrs)
+              : updatedContent;
 
           // Call callback with updated full note text
           this.updatedViewText(updatedFull);

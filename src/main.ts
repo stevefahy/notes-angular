@@ -5,14 +5,14 @@ import {
   withRouterConfig,
   withInMemoryScrolling,
 } from '@angular/router';
-import { provideAnimations } from '@angular/platform-browser/animations';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import {
   provideHttpClient,
   withInterceptorsFromDi,
 } from '@angular/common/http';
 import { provideStore } from '@ngrx/store';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
-import { provideZoneChangeDetection } from '@angular/core';
+import { provideZoneChangeDetection, isDevMode } from '@angular/core';
 import { AppComponent } from './app/app.component';
 import { routes } from './app/app.routes';
 import {
@@ -35,7 +35,7 @@ bootstrapApplication(AppComponent, {
         scrollPositionRestoration: 'enabled',
       }),
     ),
-    provideAnimations(),
+    provideAnimationsAsync(),
     provideHttpClient(withInterceptorsFromDi()),
     provideStore({
       notification: notificationReducer,
@@ -43,7 +43,7 @@ bootstrapApplication(AppComponent, {
       editing: editingReducer,
       snack: snackReducer,
     }),
-    provideStoreDevtools({ maxAge: 25 }),
+    ...(isDevMode() ? [provideStoreDevtools({ maxAge: 25 })] : []),
     provideZoneChangeDetection(),
   ],
 }).catch((err) => console.error(err));

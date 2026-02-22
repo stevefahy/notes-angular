@@ -4,15 +4,7 @@ import { MatCardModule } from '@angular/material/card';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { NoteEditorView } from 'src/app/core/model/global';
 import { ViewnoteMarkdownComponent } from '../viewnote-markdown/viewnote-markdown.component';
-import matter from 'gray-matter';
-import { Buffer } from 'buffer';
-
-// Required for gray-matter library
-(window as any).global = window;
-global.Buffer = global.Buffer || Buffer;
-(window as any).process = {
-  version: '',
-};
+import fm from 'front-matter';
 
 @Component({
   selector: 'ViewNote',
@@ -26,7 +18,7 @@ export class ViewnoteComponent implements NoteEditorView, OnInit {
   @Input() splitScreen: boolean;
   @Input()
   set viewText(val: string) {
-    this.content = matter(val).content;
+    this.content = fm(val).body;
     if (this.content !== this.contextView()) {
       this.contextView.update((prev) => this.content);
       this.hideSkeleton();

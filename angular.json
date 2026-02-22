@@ -29,8 +29,9 @@
             "scripts": [],
             "allowedCommonJsDependencies": [
               "matter",
-              "buffer",
-              "gray-matter",
+              "front-matter",
+              "js-yaml",
+              "highlight.js",
               "markdown-it",
               "markdown-it-emoji",
               "markdown-it-footnote",
