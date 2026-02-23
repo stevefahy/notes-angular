@@ -9,6 +9,7 @@ import { CommonModule } from '@angular/common';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { ViewnoteMarkdownComponent } from '../viewnote-markdown/viewnote-markdown.component';
 import fm from 'front-matter';
+import { truncateMarkdownPreview } from '../../../../core/lib/truncateMarkdownPreview';
 
 @Component({
   selector: 'ViewNoteThumb',
@@ -21,7 +22,8 @@ import fm from 'front-matter';
 export class ViewnotethumbComponent implements OnInit {
   @Input()
   set text(val: string) {
-    this.content = fm(val).body;
+    const raw = fm(val ?? '').body;
+    this.content = truncateMarkdownPreview(raw);
     this.hideSkeleton();
   }
   @Input() updatedViewText: (updatedEdit: string) => void;
