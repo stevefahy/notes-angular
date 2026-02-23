@@ -30,6 +30,13 @@ export class AuthService {
     private router: Router
   ) {
     this.AutoRefreshToken();
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && this.authContext().success) {
+          this.verifyRefreshToken();
+        }
+      });
+    }
   }
 
   interval: NodeJS.Timeout;
