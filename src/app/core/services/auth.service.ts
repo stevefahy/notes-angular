@@ -32,8 +32,8 @@ export class AuthService {
     this.AutoRefreshToken();
     if (typeof document !== 'undefined') {
       document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible' && this.authContext().success) {
-          this.verifyRefreshToken();
+        if (document.visibilityState === 'visible') {
+          this.verifyRefreshTokenWithRetry();
         }
       });
     }
@@ -102,7 +102,7 @@ export class AuthService {
 
   public authGuardVerify = async () => {
     if (!this.authContext().token) {
-      const rt = await this.verifyRefreshToken();
+      await this.verifyRefreshTokenWithRetry();
     }
     // console.log(
     //   this.jwtHelper.getTokenExpirationDate(this.authContext().token!)
@@ -134,6 +134,33 @@ export class AuthService {
     } catch (err) {
       this.resetAuthContext();
     }
+  };
+
+  public verifyRefreshTokenWithRetry = async (retries = 3) => {
+    for (let i = 0; i < retries; i++) {
+      try {
+        const response = await this.getRefreshToken();
+        if (response?.success) {
+          this.authContext.update((authContext: IAuthContext) => {
+            return {
+              ...authContext,
+              success: response.success,
+              details: response.details,
+              token: response.token,
+              loading: false,
+            };
+          });
+          return;
+        }
+      } catch {
+        /* retry on next iteration */
+      }
+      if (i < retries - 1) {
+        await new Promise((r) => setTimeout(r, 1000));
+      }
+    }
+    this.resetAuthContext();
+    this.autoLogout();
   };
 
   readonly getRefreshToken = async () => {

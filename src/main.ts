@@ -12,8 +12,14 @@ import {
 } from '@angular/common/http';
 import { provideStore } from '@ngrx/store';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
-import { provideZoneChangeDetection, isDevMode } from '@angular/core';
+import {
+  provideZoneChangeDetection,
+  isDevMode,
+  APP_INITIALIZER,
+  inject,
+} from '@angular/core';
 import { AppComponent } from './app/app.component';
+import { AuthService } from './app/core/services/auth.service';
 import { routes } from './app/app.routes';
 import {
   editingReducer,
@@ -24,6 +30,14 @@ import { snackReducer } from './app/store/reducers/snack.reducer';
 
 bootstrapApplication(AppComponent, {
   providers: [
+    {
+      provide: APP_INITIALIZER,
+      useFactory: () => {
+        const authService = inject(AuthService);
+        return () => authService.verifyRefreshTokenWithRetry();
+      },
+      multi: true,
+    },
     provideRouter(
       routes,
       withComponentInputBinding(),
