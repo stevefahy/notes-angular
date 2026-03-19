@@ -1,11 +1,7 @@
-<MainNavigation />
-<main><ng-content></ng-content></main>
-@if (status()) {
-  <div>
-    <NotificationView
-    n_status="{{ notification().n_status }}"
-    title="{{ notification().title }}"
-    message="{{ notification().message }}"
-    />
+<div class="app-shell">
+  @if (!isLoginPage()) {
+    <MainNavigation />
+  }
+  <main [class.login-page]="isLoginPage()"><ng-content></ng-content></main>
+  <SnackbarView [snack]="snackbar()" />
 </div>
-}

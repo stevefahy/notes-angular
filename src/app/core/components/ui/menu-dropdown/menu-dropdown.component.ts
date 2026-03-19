@@ -1,9 +1,14 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  inject,
+  signal,
+  HostListener,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { MatButtonModule } from '@angular/material/button';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatIconModule } from '@angular/material/icon';
+import { trigger, state, style, transition, animate } from '@angular/animations';
 import APPLICATION_CONSTANTS from 'src/app/core/application-constants/application-constants';
 import { AuthService } from '../../../services/auth.service';
 import { IAuthContext, IAuthDetails } from 'src/app/core/model/global';
@@ -14,19 +19,27 @@ const AC = APPLICATION_CONSTANTS;
 @Component({
   selector: 'MenuDropdown',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterModule,
-    MatButtonModule,
-    MatMenuModule,
-    MatIconModule,
-  ],
+  imports: [CommonModule, RouterModule],
   templateUrl: './menu-dropdown.component.html',
   styleUrls: ['./menu-dropdown.component.scss'],
+  animations: [
+    trigger('slideMenu', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(-8px)' }),
+        animate('150ms ease-out', style({ opacity: 1, transform: 'translateY(0)' })),
+      ]),
+      transition(':leave', [
+        animate('100ms ease-in', style({ opacity: 0, transform: 'translateY(-4px)' })),
+      ]),
+    ]),
+  ],
 })
 export class MenuDropdownComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private router = inject(Router);
+
+  open = signal(false);
+  rippleKey = signal(0);
 
   loading: boolean | null;
   success: boolean | null;
@@ -48,6 +61,13 @@ export class MenuDropdownComponent implements OnInit, OnDestroy {
       });
   }
 
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(e: MouseEvent): void {
+    if (this.open() && !(e.target instanceof Element && (e.target as Element).closest('.dropdown'))) {
+      this.open.set(false);
+    }
+  }
+
   updateContext = (context: IAuthContext) => {
     this.loading = context.loading;
     this.success = context.success;
@@ -55,13 +75,28 @@ export class MenuDropdownComponent implements OnInit, OnDestroy {
     this.onLogout = context.onLogout;
   };
 
-  handleProfile = async (event: Event) => {
-    event.preventDefault();
-    this.router.navigate([`/profile`]);
+  toggleMenu = (): void => {
+    this.open.update((v) => !v);
+    if (this.open()) {
+      this.rippleKey.update((k) => k + 1);
+    }
   };
 
-  loginHandler = async (event: Event) => {
+  onTriggerKeydown = (e: KeyboardEvent): void => {
+    if (e.key === 'Escape') {
+      this.open.set(false);
+    }
+  };
+
+  handleProfile = async (event: Event): Promise<void> => {
     event.preventDefault();
-    this.router.navigate([`${AC.LOGIN_PAGE}`]);
+    this.open.set(false);
+    this.router.navigate(['/profile']);
+  };
+
+  loginHandler = async (event: Event): Promise<void> => {
+    event.preventDefault();
+    this.open.set(false);
+    this.router.navigate([AC.LOGIN_PAGE]);
   };
 }

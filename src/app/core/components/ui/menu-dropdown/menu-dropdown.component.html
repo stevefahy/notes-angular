@@ -1,46 +1,45 @@
-<div ngClass="nav_menu">
-  <button
-    mat-icon-button
-    [matMenuTriggerFor]="menu"
-    aria-label="icon-button with a menu"
+<div class="nav_menu">
+  <div class="dropdown">
+    <button
+      class="icon profile-trigger"
+      [class.is-active]="open()"
+      (click)="toggleMenu()"
+      (keydown)="onTriggerKeydown($event)"
+      aria-haspopup="true"
+      [attr.aria-expanded]="open()"
+      type="button"
     >
-    <mat-icon ngClass="icon">more_vert</mat-icon>
-  </button>
-  <mat-menu #menu="matMenu">
-    @if (success && details) {
-      <div>
-        <button mat-menu-item (click)="handleProfile($event)">
-          <mat-icon>account_circle</mat-icon>
-          <span>{{ details.username }}</span>
-        </button>
-      </div>
-    }
+      @if (rippleKey() > 0) {
+        <span class="ripple-burst"></span>
+      }
+      <span class="material-icons-outlined menu_item">person</span>
+    </button>
 
-    @if (success) {
-      <div>
-        <button mat-menu-item (click)="handleProfile($event)">
-          <mat-icon>settings</mat-icon>
-          <span>Settings</span>
-        </button>
+    @if (open()) {
+      <div
+        class="dropdown-menu"
+        role="menu"
+        [@slideMenu]
+      >
+        @if (success) {
+          <button class="dropdown-item" (click)="handleProfile($event)" role="menuitem">
+            <span class="material-icons-outlined menu_item">person</span>
+            Profile
+          </button>
+        }
+        @if (!success) {
+          <button class="dropdown-item" (click)="loginHandler($event)" role="menuitem">
+            <span class="material-icons menu_item">login</span>
+            Sign in
+          </button>
+        }
+        @if (success) {
+          <button class="dropdown-item" (click)="onLogout()" role="menuitem">
+            <span class="material-icons menu_item danger_icon">logout</span>
+            Sign out
+          </button>
+        }
       </div>
     }
-
-    @if (!success) {
-      <div>
-        <button mat-menu-item (click)="loginHandler($event)">
-          <mat-icon>login</mat-icon>
-          <span>Login</span>
-        </button>
-      </div>
-    }
-
-    @if (success) {
-      <div>
-        <button mat-menu-item (click)="onLogout()">
-          <mat-icon>logout</mat-icon>
-          <span>Logout</span>
-        </button>
-      </div>
-    }
-  </mat-menu>
+  </div>
 </div>

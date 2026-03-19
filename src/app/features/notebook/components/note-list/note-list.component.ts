@@ -11,7 +11,6 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
 import {
   Note,
   NotesProps,
@@ -21,15 +20,19 @@ import {
 import { toObservable } from '@angular/core/rxjs-interop';
 import { Observable, of, Subject, takeUntil } from 'rxjs';
 import DateFormat from 'src/app/core/lib/date-format';
+import {
+  extractNoteTitle,
+  detectNoteTag,
+} from 'src/app/core/lib/note-card-utils';
 import { ViewnotethumbComponent } from '../../../viewnote/components/viewnotethumb/viewnotethumb.component';
 
 @Component({
-    selector: 'NoteList',
-    standalone: true,
-    imports: [CommonModule, RouterModule, MatCardModule, ViewnotethumbComponent],
-    templateUrl: './note-list.component.html',
-    styleUrls: ['./note-list.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'NoteList',
+  standalone: true,
+  imports: [CommonModule, RouterModule, ViewnotethumbComponent],
+  templateUrl: './note-list.component.html',
+  styleUrls: ['./note-list.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NoteListComponent implements NotesProps, OnInit, OnDestroy {
   @Input()
@@ -136,13 +139,37 @@ export class NoteListComponent implements NotesProps, OnInit, OnDestroy {
 
   divStatus = (id: any) => {
     const target: HTMLInputElement = document.getElementById(
-      `input_${id}`
+      `input_${id}`,
     ) as HTMLInputElement;
     let { checked } = target;
     const checked_id = target.value;
     target.checked = !checked;
     checked = target.checked;
     this.updateCheckbox(checked_id, checked);
+  };
+
+  isNoteSelected = (noteId: string): boolean => {
+    const c = this.isChecked();
+    return !!c?.find((x) => x.id === noteId)?.selected;
+  };
+
+  getTitle = (content: string) => extractNoteTitle(content);
+  getTag = (content: string) => detectNoteTag(content);
+
+  handleCardClick = (noteId: string) => {
+    if (this.onNotesEdit) {
+      const c = this.isChecked();
+      const entry = c?.find((x) => x.id === noteId);
+      const newChecked = !entry?.selected;
+      this.updateCheckbox(noteId, newChecked);
+    }
+  };
+
+  handleCardKeydown = (noteId: string, e: KeyboardEvent) => {
+    if (this.onNotesEdit && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      this.handleCardClick(noteId);
+    }
   };
 
   NoteLinkHandler = (event: Event) => {

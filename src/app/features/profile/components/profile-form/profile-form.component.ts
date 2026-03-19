@@ -1,8 +1,8 @@
 import {
   Component,
   ViewChild,
-  ElementRef,
   signal,
+  computed,
   Input,
   OnInit,
   ViewContainerRef,
@@ -11,14 +11,16 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
 import {
   AlertInterface,
-  ProfileFormProps,
   ChangePasswordObj,
   NewUsernameObj,
 } from 'src/app/core/model/global';
 import APPLICATION_CONSTANTS from 'src/app/core/application-constants/application-constants';
+import {
+  normalizeErrorToString,
+  toUserFriendlyError,
+} from 'src/app/core/lib/error-message-map';
 import { ErrorAlertComponent } from '../../../../core/components/ui/error-alert/error-alert.component';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { Subject, takeUntil } from 'rxjs';
@@ -26,32 +28,102 @@ import { Subject, takeUntil } from 'rxjs';
 const AC = APPLICATION_CONSTANTS;
 
 @Component({
-    selector: 'ProfileForm',
-    standalone: true,
-    imports: [CommonModule, FormsModule, MatButtonModule],
-    templateUrl: './profile-form.component.html',
-    styleUrls: ['./profile-form.component.scss'],
+  selector: 'ProfileForm',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './profile-form.component.html',
+  styleUrls: ['./profile-form.component.scss'],
 })
-export class ProfileFormComponent
-  implements ProfileFormProps, OnInit, OnDestroy
-{
-  @Input()
-  set userName(name: string) {
-    this.username.set(name);
+export class ProfileFormComponent implements OnInit, OnDestroy {
+  @Input() set userName(name: string) {
+    this._username.set(name ?? '');
   }
   @Input() onChangePassword: (arg0: ChangePasswordObj) => void;
   @Input() onChangeUsername: (arg0: NewUsernameObj) => void;
 
-  @ViewChild('oldPasswordRef') oldPasswordRef!: ElementRef<HTMLInputElement>;
-  @ViewChild('newPasswordRef') newPasswordRef!: ElementRef<HTMLInputElement>;
-  @ViewChild('newUsernameRef') newUsernameRef!: ElementRef<HTMLInputElement>;
-
   @ViewChild('errorcontainer', { read: ViewContainerRef })
   errorcontainer: ViewContainerRef;
 
-  username = signal<string>('');
-  userNameToggle = signal<boolean>(false);
-  passwordToggle = signal<boolean>(false);
+  AC = AC;
+  _username = signal<string>('');
+  activeTab = signal<'user' | 'pass'>('user');
+  newUsername = signal('');
+  oldPassword = signal('');
+  newPassword = signal('');
+  isSubmitting = signal(false);
+  usernameServerError = signal('');
+  passwordServerError = signal('');
+  tooltipSuppressed = signal(false);
+
+  usernameError = computed(() => {
+    const val = this.newUsername();
+    const len = val.length;
+    if (len === 0) return '';
+    if (len > AC.USERNAME_MAX)
+      return `Too long — max ${AC.USERNAME_MAX} characters`;
+    if (val.trim() === this._username()) return 'Same as your current username';
+    if (val.trim().length < AC.USERNAME_MIN)
+      return `At least ${AC.USERNAME_MIN} characters required`;
+    return '';
+  });
+
+  usernameValid = computed(
+    () =>
+      this.newUsername().length > 0 &&
+      this.newUsername().length <= AC.USERNAME_MAX &&
+      this.newUsername().trim() !== this._username() &&
+      this.newUsername().trim().length >= AC.USERNAME_MIN,
+  );
+
+  usernameTooltip = computed(
+    () =>
+      this.usernameError() ||
+      (this.newUsername().length === 0 ? 'Enter a new username to save' : ''),
+  );
+
+  passwordError = computed(() => {
+    const np = this.newPassword();
+    const op = this.oldPassword();
+    if (!np || !op) return '';
+    if (np === op) return 'Must differ from your current password';
+    if (np.length < AC.PASSWORD_MIN)
+      return `At least ${AC.PASSWORD_MIN} characters required`;
+    if (np.length > AC.PASSWORD_MAX) return `Max ${AC.PASSWORD_MAX} characters`;
+    return '';
+  });
+
+  passwordValid = computed(
+    () =>
+      !!this.oldPassword() &&
+      !!this.newPassword() &&
+      this.newPassword() !== this.oldPassword() &&
+      this.newPassword().length >= AC.PASSWORD_MIN &&
+      this.newPassword().length <= AC.PASSWORD_MAX,
+  );
+
+  passwordTooltip = computed(
+    () =>
+      this.passwordError() ||
+      (!this.oldPassword() || !this.newPassword()
+        ? 'Fill in both fields to continue'
+        : ''),
+  );
+
+  strengthScore = computed(() => {
+    let s = 0;
+    const np = this.newPassword();
+    if (np.length >= AC.PASSWORD_MIN) s++;
+    if (/[A-Z]/.test(np)) s++;
+    if (/[0-9]/.test(np)) s++;
+    if (/[^A-Za-z0-9]/.test(np)) s++;
+    return s;
+  });
+
+  strengthClass = computed(() => {
+    const s = this.strengthScore();
+    return s <= 1 ? 'weak' : s <= 2 ? 'ok' : 'good';
+  });
+
   formIsValid = signal<boolean>(false);
   error = signal<AlertInterface>({
     error_state: false,
@@ -60,7 +132,8 @@ export class ProfileFormComponent
   });
   error$ = toObservable(this.error);
 
-  onDestroy$: Subject<void> = new Subject();
+  onDestroy$ = new Subject<void>();
+  componentRef: ComponentRef<ErrorAlertComponent>;
 
   ngOnDestroy(): void {
     this.onDestroy$.next();
@@ -75,8 +148,12 @@ export class ProfileFormComponent
     });
   }
 
-  componentRef: ComponentRef<ErrorAlertComponent>;
-  public addErrorComponent(): void {
+  setActiveTab(tab: 'user' | 'pass'): void {
+    this.activeTab.set(tab);
+  }
+
+  addErrorComponent(): void {
+    if (!this.errorcontainer) return;
     import('../../../../core/lazy-error-alert.module').then((importedFile) => {
       const componentToOpen =
         importedFile.LazyLoadedModule.components.dynamicComponent;
@@ -87,154 +164,64 @@ export class ProfileFormComponent
     });
   }
 
-  resetError = () => {
+  resetError(): void {
     if (this.componentRef) {
       this.componentRef.destroy();
     }
     this.formIsValid.set(true);
-    this.error.update((prevState) => ({
-      ...prevState,
+    this.error.update((prev) => ({
+      ...prev,
       error_state: false,
       error_severity: '',
       message: '',
     }));
-  };
+  }
 
-  handleChangeUsername = (event: Event) => {
-    this.resetError();
-    const target = event.currentTarget! as HTMLInputElement;
-    if (target.value.length < AC.USERNAME_MIN || target.value === undefined) {
-      this.formIsValid.set(false);
-      this.error.update((prevState) => ({
-        ...prevState,
-        error_state: true,
-        error_severity: 'warning',
-        message: AC.CHANGE_USER_TOO_FEW,
-      }));
-    } else if (target.value.length > AC.USERNAME_MAX) {
-      this.formIsValid.set(false);
-      this.error.update((prevState) => ({
-        ...prevState,
-        error_state: true,
-        error_severity: 'warning',
-        message: AC.CHANGE_USER_TOO_MANY,
-      }));
-    } else if (target.value === this.username()) {
-      this.formIsValid.set(false);
-      this.error.update((prevState) => ({
-        ...prevState,
-        error_state: true,
-        error_severity: 'warning',
-        message: AC.CHANGE_USER_UNIQUE,
-      }));
-    } else {
-      this.resetError();
-    }
-  };
-
-  handleChangePassword = (event: Event) => {
-    this.resetError();
-    const target = event.currentTarget! as HTMLInputElement;
-    const enteredOldPassword = this.oldPasswordRef.nativeElement.value;
-    const enteredNewPassword = this.newPasswordRef.nativeElement.value;
-    if (
-      enteredOldPassword!.length < AC.PASSWORD_MIN ||
-      enteredNewPassword!.length < AC.PASSWORD_MIN
-    ) {
-      this.formIsValid.set(false);
-      this.error.update((prevState) => ({
-        ...prevState,
-        error_state: true,
-        error_severity: 'warning',
-        message: AC.CHANGE_PASS_TOO_FEW,
-      }));
-    } else if (
-      enteredOldPassword!.length > AC.PASSWORD_MAX ||
-      enteredNewPassword!.length > AC.PASSWORD_MAX
-    ) {
-      this.formIsValid.set(false);
-      this.error.update((prevState) => ({
-        ...prevState,
-        error_state: true,
-        error_severity: 'warning',
-        message: AC.CHANGE_PASS_TOO_MANY,
-      }));
-    } else if (
-      enteredOldPassword &&
-      enteredNewPassword &&
-      enteredOldPassword === enteredNewPassword
-    ) {
-      this.formIsValid.set(false);
-      this.error.update((prevState) => ({
-        ...prevState,
-        error_state: true,
-        error_severity: 'warning',
-        message: AC.CHANGE_PASS_UNIQUE,
-      }));
-    } else if (enteredOldPassword!.length !== enteredNewPassword!.length) {
-      this.formIsValid.set(false);
-      this.error.update((prevState) => ({
-        ...prevState,
-        error_state: true,
-        error_severity: 'warning',
-        message: AC.CHANGE_PASS_LENGTH,
-      }));
-    } else {
-      this.resetError();
-    }
-  };
-
-  submitHandlerUsername = (event: Event) => {
+  submitHandlerUsername = async (event: Event): Promise<void> => {
     event.preventDefault();
-    const enteredNewUsername = this.newUsernameRef.nativeElement.value;
-    if (!enteredNewUsername) return;
-    this.onChangeUsername({
-      newUsername: enteredNewUsername,
-    });
-    this.resetToggle();
-  };
-
-  submitHandlerPassword = (event: Event) => {
-    event.preventDefault();
-    const enteredOldPassword = this.oldPasswordRef.nativeElement?.value;
-    const enteredNewPassword = this.newPasswordRef.nativeElement?.value;
-    if (!enteredOldPassword || !enteredNewPassword) {
-      return;
+    if (!this.usernameValid()) return;
+    this.isSubmitting.set(true);
+    this.usernameServerError.set('');
+    const result = (await this.onChangeUsername({
+      newUsername: this.newUsername().trim(),
+    })) as unknown as {
+      success?: boolean;
+      error?: string;
+      fromServer?: boolean;
+    };
+    this.isSubmitting.set(false);
+    if (result?.error) {
+      const rawMsg = normalizeErrorToString(result.error);
+      const msg =
+        result.fromServer === true ? rawMsg : toUserFriendlyError(rawMsg);
+      this.usernameServerError.set(msg);
+    } else if (result?.success) {
+      this.newUsername.set('');
     }
-    this.onChangePassword({
-      oldPassword: enteredOldPassword,
-      newPassword: enteredNewPassword,
-    });
-    this.resetToggle();
   };
 
-  resetToggle = () => {
-    this.resetError();
-    this.userNameToggle.update((prev) => {
-      return false;
-    });
-    this.passwordToggle.update((prev) => {
-      return false;
-    });
-  };
-
-  toggleUserName = () => {
-    this.resetError();
-    this.userNameToggle.update((prev) => {
-      return !prev;
-    });
-    this.passwordToggle.update((prev) => {
-      return false;
-    });
-  };
-
-  togglePassword = () => {
-    this.resetError();
-    this.passwordToggle.update((prev) => {
-      return !prev;
-    });
-    this.userNameToggle.update((prev) => {
-      return false;
-    });
+  submitHandlerPassword = async (event: Event): Promise<void> => {
+    event.preventDefault();
+    if (!this.passwordValid()) return;
+    this.isSubmitting.set(true);
+    this.passwordServerError.set('');
+    const result = (await this.onChangePassword({
+      oldPassword: this.oldPassword(),
+      newPassword: this.newPassword(),
+    })) as unknown as {
+      success?: boolean;
+      error?: string;
+      fromServer?: boolean;
+    };
+    this.isSubmitting.set(false);
+    if (result?.error) {
+      const rawMsg = normalizeErrorToString(result.error);
+      const msg =
+        result.fromServer === true ? rawMsg : toUserFriendlyError(rawMsg);
+      this.passwordServerError.set(msg);
+    } else if (result?.success) {
+      this.oldPassword.set('');
+      this.newPassword.set('');
+    }
   };
 }

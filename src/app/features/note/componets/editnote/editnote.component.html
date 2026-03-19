@@ -1,12 +1,21 @@
-<div id="edit" ngClass="edit editnote_box {{
-    isVisible() ? 'show editting' : isSplitscreen() ? 'show' : 'hide'
-  }}">
-  <mat-card>
-    <mat-card-content>
-      <article ngClass="viewnote_content editor">
-        <div #noteInputRef contentEditable="{{ isVisible() || isSplitscreen() }}" ngClass="viewnote_content editable"
-          (input)="setText($event)" data-placeholder="Start writing...'"></div>
+<div
+  id="edit"
+  ngClass="edit editnote_box {{
+    isSplitscreen() ? 'view_split show' : isVisible() ? 'show' : 'hide'
+  }}"
+>
+  <div class="edit-note">
+    <div class="note-card">
+      <article class="v-card-text viewnote_content editor">
+        <div
+          #noteInputRef
+          contentEditable="{{ isVisible() || isSplitscreen() }}"
+          ngClass="viewnote_content editable"
+          (input)="setText($event)"
+          data-placeholder="Start writing..."
+          role="textbox"
+        ></div>
       </article>
-    </mat-card-content>
-  </mat-card>
+    </div>
+  </div>
 </div>

@@ -1,30 +1,63 @@
+@if (showAddNotebookForm()) {
+  <div
+    class="sheet-overlay"
+    aria-label="Close dialog"
+    (click)="onAddNotebookOverlayClick($event)"
+  >
+    @if (!isClosingAddNotebook()) {
+      <div
+        class="sheet-content-wrapper"
+        [@sheetSlide]
+        (@sheetSlide.done)="onAddNotebookSheetDone($event)"
+      >
+        <AddNotebookForm
+          [formData]="{
+            method: 'create',
+            addNotebook: addNotebookHandler,
+            onCancel: cancelHandler,
+            onRequestClose: requestCloseHandler,
+          }"
+        />
+      </div>
+    }
+  </div>
+}
 @if (!isLoaded()) {
   <div><LoadingScreen /></div>
 }
 @if (userNotebooks()) {
-  <div>
+  <div class="notebooks-list-wrap">
+    <h2 class="page-heading">Your Notebooks</h2>
     <ul ngClass="notebooks_list">
-      @for (notebook of userNotebooks(); track trackByuserNotebooks($index, notebook)) {
+      @for (
+        notebook of userNotebooks();
+        track trackByuserNotebooks($index, notebook)
+      ) {
         <NotebookListItem [notebook_item]="notebook" />
       }
     </ul>
   </div>
 }
 <Footer>
-@if (userNotebooks()) {
-  <button
-    mat-button
-    color="secondary"
-    aria-label="Add notebook button"
-    ngClass="contained medium breadcrumb_edit_fab button_fab"
-    (click)="addNotebookFormHandler()"
+  @if (userNotebooks()) {
+    <button
+      type="button"
+      class="fab"
+      aria-label="Add notebook button"
+      (click)="addNotebookFormHandler()"
     >
-    <span ngClass="icon_text">
-      <span ngClass="material-symbols-outlined button_icon white">
-        add_circle
-      </span>
-      Add Notebook
-    </span>
-  </button>
-}
+      <svg
+        width="12"
+        height="12"
+        viewBox="0 0 12 12"
+        fill="none"
+        stroke="white"
+        stroke-width="2"
+        stroke-linecap="round"
+      >
+        <path d="M6 1v10M1 6h10" />
+      </svg>
+      New Notebook
+    </button>
+  }
 </Footer>

@@ -1,4 +1,7 @@
-import { errString } from '../lib/errString';
+import {
+  normalizeErrorToString,
+  toUserFriendlyError,
+} from '../lib/error-message-map';
 import APPLICATION_CONSTANTS from '../application-constants/application-constants';
 import { CreateNoteObj, CreateNote } from '../model/global';
 import { environment } from 'src/environments/environment';
@@ -7,7 +10,7 @@ const AC = APPLICATION_CONSTANTS;
 
 export const createNote = async (
   token: string,
-  note: CreateNoteObj
+  note: CreateNoteObj,
 ): Promise<CreateNote> => {
   let response;
   try {
@@ -21,27 +24,42 @@ export const createNote = async (
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(note),
-      }
+      },
     );
     if (response.status === 404) {
-      throw new Error(`${response.url} Not Found.`);
+      throw new Error(`404 Not Found: ${response.url}`);
+    }
+    if (!response.ok) {
+      try {
+        const errData = await response.json();
+        if (errData && errData.error != null)
+          return {
+            error: normalizeErrorToString(errData.error),
+            fromServer: true,
+          };
+      } catch {}
+      return {
+        error:
+          response.status >= 500
+            ? 'The server could not be reached. Please try again.'
+            : `${AC.NOTE_CREATE_ERROR}`,
+        fromServer: false,
+      };
     }
   } catch (err: unknown) {
-    const errMessage = errString(err);
-    return { error: errMessage };
+    return { error: toUserFriendlyError(err), fromServer: false };
   }
   let data: CreateNote;
   try {
     data = await response.json();
     if (data === null) {
-      return { error: `${AC.NOTE_CREATE_ERROR}` };
+      return { error: `${AC.NOTE_CREATE_ERROR}`, fromServer: false };
     }
   } catch (err: unknown) {
-    const errMessage = errString(err);
-    return { error: errMessage };
+    return { error: toUserFriendlyError(err), fromServer: false };
   }
-  if (data.error) {
-    return { error: data.error };
+  if ('error' in data && data.error) {
+    return { error: normalizeErrorToString(data.error), fromServer: true };
   }
   return data;
 };

@@ -1,17 +1,20 @@
-<div [ngClass]="'header'" id="header_height">
-  <div [ngClass]="'header_container'">
-    <div [ngClass]="'logo_container'">
-      <div [ngClass]="'header_title_logo'">
+<div class="header" id="header_height">
+  <div class="header_container">
+    <div class="logo_container">
+      <div class="logo_mark">
         <img
-          src="../../../../assets/images/edit_white.png"
+          src="assets/images/edit_white.png"
           alt="Notes logo"
-          width="20"
-          height="20"
+          width="18"
+          height="18"
         />
       </div>
-      <div [ngClass]="'header_title'">NOTES</div>
+      <div class="logo_text">Notes</div>
     </div>
-    <div [ngClass]="'header_toolbar'">
+    <div class="header_toolbar">
+      @if (editNotesService.showPill()) {
+        <span class="edit-pill">{{ editNotesService.selectedCount() }} selected</span>
+      }
       <MenuDropdown />
     </div>
   </div>

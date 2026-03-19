@@ -1,76 +1,168 @@
-<section [ngClass]="'auth'">
-  <mat-card>
-    <mat-card-content>
-      <mat-card-header [ngClass]="'header'">{{
-        isLogin() ? "Login" : "Sign Up"
-      }}</mat-card-header>
-      <form novalidate>
+<div class="splash-login">
+  <div class="splash-top">
+    <div class="splash-logo-row">
+      <div class="splash-logo-mark">
+        <img
+          alt="Notes logo"
+          src="assets/images/edit_white.png"
+          width="20"
+          height="20"
+        />
+      </div>
+      <span class="splash-logo-text">Notes</span>
+    </div>
+    <div class="splash-headline">
+      Your notes,<br />beautifully<br />organised.
+    </div>
+    <div class="splash-sub">
+      Write freely, stay focused. Everything in one calm, clutter-free space.
+    </div>
+  </div>
+
+  <div class="login-card">
+    <h2 class="login-card-title">
+      {{ isLogin() ? "Sign in" : "Create account" }}
+    </h2>
+    <form novalidate (ngSubmit)="submitHandler($event)">
+      @if (!isLogin()) {
+        <label class="form-label" for="username">Your Name</label>
+        <input
+          class="form-input"
+          [class.input-error]="
+            !!usernameError() ||
+            (error().error_state &&
+              error().message === AC.SIGNUP_INVALID_USERNAME)
+          "
+          type="text"
+          id="username"
+          required
+          placeholder="Enter username"
+          autocomplete="username"
+          [ngModel]="signupUsername()"
+          (ngModelChange)="signupUsername.set($event); resetError()"
+          name="username"
+          #usernameInputRef
+        />
+        <div class="field-feedback">
+          <div class="inline-error" [class.visible]="!!usernameError()">
+            <span>{{ usernameError() }}</span>
+          </div>
+          <span
+            class="char-counter"
+            [class.over]="signupUsername().length > AC.USERNAME_MAX"
+          >
+            {{ signupUsername().length }} / {{ AC.USERNAME_MAX }}
+          </span>
+        </div>
+      }
+      <label class="form-label" for="email">Email address</label>
+      <input
+        class="form-input"
+        [class.input-error]="
+          (!isLogin() && !!emailError()) ||
+          (error().error_state && error().message === AC.SIGNUP_INVALID_EMAIL)
+        "
+        type="email"
+        id="email"
+        required
+        placeholder="Email"
+        autocomplete="email"
+        [ngModel]="signupEmail()"
+        (ngModelChange)="signupEmail.set($event); resetError()"
+        name="email"
+        #emailInputRef
+      />
+      <div class="field-feedback">
         @if (!isLogin()) {
-          <div>
-            <div [ngClass]="'control'">
-              <label htmlFor="username">Your Name</label>
-              <input
-                type="text"
-                id="username"
-                required
-                placeholder="Username"
-                autoComplete="username"
-                (input)="resetError()"
-                #usernameInputRef
-                />
-            </div>
+          <div class="inline-error" [class.visible]="!!emailError()">
+            <span>{{ emailError() }}</span>
           </div>
         }
-        <div [ngClass]="'control'">
-          <label htmlFor="email">Your Email</label>
-          <input
-            type="email"
-            id="email"
-            required
-            placeholder="Email"
-            autoComplete="email"
-            (change)="resetError()"
-            (input)="resetError()"
-            #emailInputRef
-            />
+      </div>
+      <label class="form-label" for="password">Password</label>
+      <input
+        class="form-input"
+        [class.input-error]="
+          (!isLogin() && !!passwordError()) ||
+          (error().error_state &&
+            error().message === AC.SIGNUP_INVALID_PASSWORD)
+        "
+        type="password"
+        id="password"
+        required
+        [placeholder]="
+          isLogin() ? 'Password' : 'Min. ' + AC.PASSWORD_MIN + ' Characters'
+        "
+        [autocomplete]="isLogin() ? 'current-password' : 'new-password'"
+        [ngModel]="signupPassword()"
+        (ngModelChange)="signupPassword.set($event); resetError()"
+        name="password"
+        #passwordInputRef
+      />
+      @if (!isLogin()) {
+        <div class="strength-row">
+          @for (i of [1, 2, 3, 4]; track i) {
+            <div
+              class="bar-seg"
+              [class.weak]="i <= strengthScore() && strengthClass() === 'weak'"
+              [class.ok]="i <= strengthScore() && strengthClass() === 'ok'"
+              [class.good]="i <= strengthScore() && strengthClass() === 'good'"
+            ></div>
+          }
         </div>
-        <div [ngClass]="'control'">
-          <label htmlFor="password">Your Password</label>
-          <input
-            type="password"
-            id="password"
-            required
-            placeholder="Password"
-            autoComplete="current-password"
-            (change)="resetError()"
-            (input)="resetError()"
-            #passwordInputRef
-            />
-        </div>
-        <div [ngClass]="'actions'">
-          <button
-            mat-button
-            [ngClass]="'contained medium'"
-            color="secondary"
-            (click)="submitHandler($event)"
-            [disabled]="isSubmitting()"
-            >
-            {{ isLogin() ? "Login" : "Create Account" }}
-          </button>
-          <button
-            mat-button
-            [ngClass]="'basic large'"
-            (click)="switchAuthModeHandler()"
-            >
-            {{
-            isLogin() ? "Create new account" : "Login with existing account"
-            }}
-          </button>
-        </div>
-      </form>
-      @if (error().error_state) {
-        <ng-container #errorcontainer></ng-container>
       }
-    </mat-card-content>
-  </mat-card>
-</section>
+      <div class="field-feedback">
+        @if (!isLogin()) {
+          <div class="inline-error" [class.visible]="!!passwordError()">
+            <span>{{ passwordError() }}</span>
+          </div>
+        }
+      </div>
+      <div class="btn-wrap">
+        @if (!isLogin() && !signupFormValid()) {
+          <div class="btn-tooltip">{{ signupTooltip() }}</div>
+        }
+        <button
+          class="btn-login"
+          type="submit"
+          [disabled]="isSubmitting() || (!isLogin() && !signupFormValid())"
+        >
+          {{ isLogin() ? "Sign in" : "Create Account" }}
+        </button>
+      </div>
+      <div class="login-alt">
+        {{ isLogin() ? "No account? " : "" }}
+        <button
+          type="button"
+          class="login-alt-link"
+          (click)="switchAuthModeHandler()"
+        >
+          {{ isLogin() ? "Create one" : "Login with existing account" }}
+        </button>
+      </div>
+      <div
+        class="form-error"
+        [class.visible]="
+          error().error_state && error().message && !isFieldError()
+        "
+      >
+        <svg
+          width="11"
+          height="11"
+          viewBox="0 0 12 12"
+          fill="none"
+          class="form-error-icon"
+        >
+          <circle cx="6" cy="6" r="5.5" fill="#b91c1c" />
+          <path
+            d="M6 3.5v3M6 8v.5"
+            stroke="white"
+            stroke-width="1.2"
+            stroke-linecap="round"
+          />
+        </svg>
+        {{ error().message }}
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,10 +1,37 @@
+.page-heading {
+  font-family: var(--theme-font-serif);
+  font-size: 18px;
+  color: var(--theme-text-muted);
+  margin-top: 16px;
+  margin-left: 16px;
+  margin-right: 16px;
+  margin-bottom: 0;
+}
+
+.notebooks-list-wrap {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .notebooks-list-wrap {
+    max-width: 100%;
+  }
+  .page-heading {
+    font-size: 16px;
+  }
+}
+
 .notebooks_list {
   list-style: none;
   color: white;
   margin-block-start: 0em;
   padding-inline-start: 0px;
-  padding-left: 10px;
-  padding-right: 10px;
+  padding-left: 14px;
+  padding-right: 14px;
+  background-color: var(--theme-bg);
+  padding-top: 5px;
 }
 
 .notebooks_list li {
@@ -12,52 +39,118 @@
   margin-bottom: 2px;
 }
 
-.notebooks_list li div:hover {
-  background-color: #f7f7f7;
-}
-
-.notebooks_list li:first-child {
-  padding-top: 10px;
+.notebooks_list li .vcard:hover {
+  box-shadow: var(--theme-shadow-mid);
 }
 
 ul.notebooks_list .notebooks_list_bg {
+  padding-top: 8px;
+}
+
+.notebooks_list .notebook-link:first-of-type .notebooks_list_bg {
   padding-top: 10px;
 }
 
 .notebooks_list_left {
-  width: 20px;
-  border-bottom-left-radius: 6px;
-  border-top-left-radius: 6px;
-  border-radius: 6px;
+  width: 27px;
+  min-width: 27px;
+  height: 40px;
+  border-radius: 5px;
+  overflow: hidden;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.nb-spine-forest {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--notebook-emerald-color);
+}
+
+.nb-spine-emerald {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--notebook-lime-color);
+}
+
+.nb-spine-lime {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--notebook-sage-color);
+}
+
+.nb-spine-sage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--notebook-forest-color);
+}
+
+.nb-spine-loading {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--theme-text-muted);
 }
 
 .notebooks_list_right {
   display: flex;
   width: 100%;
-  padding-left: 10px;
   align-self: center;
-  font-size: var(--size-4a);
-  color: var(--color-grey-600);
+  font-size: 16px;
+  font-weight: 300;
+  color: var(--theme-text);
   flex-direction: column;
   justify-content: center;
 }
 
+.nb-count {
+  font-size: 12px;
+  color: var(--theme-text-muted);
+  background: var(--theme-bg);
+  border-radius: 99px;
+  padding: 2px 8px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.notebooks_list_arrow {
+  color: var(--theme-text-muted);
+  font-size: 15px;
+}
+
+.notebooks_list_right .date_format {
+  font-size: 11px;
+  color: var(--theme-text-muted);
+  font-weight: 400;
+}
+
 .notebooks_list_outer {
   width: 100%;
-  height: 50px;
+  min-height: 50px;
   display: flex;
+  align-items: center;
+  background-color: var(--theme-surface);
+  border-radius: 14px;
+  padding: 13px 14px;
+  gap: 12px;
 }
 
-.cardcontent {
-  display: flex;
-  padding-top: 13px;
-  padding-bottom: 13px;
-  padding-left: 16px;
-  padding-right: 16px;
-}
-
-.notebooks_list li:first-child {
-  padding-top: 10px;
+.notebooks_list .notebooks_list_outer:hover {
+  background-color: var(--theme-ghost-hover);
 }
 
 .notebooks_list_bg {
@@ -65,25 +158,33 @@ ul.notebooks_list .notebooks_list_bg {
   padding-top: 10px;
 }
 
-.notebook_default {
-  color: var(--notebook-color-default);
-  background: var(--notebook-color-bg-default);
+.tab_forest {
+  background: var(--notebook-forest);
 }
 
-.tab_default {
-  background: var(--notebook-color-tab-default);
+.tab_emerald {
+  background: var(--notebook-emerald);
 }
 
-.tab_red {
-  background: var(--notebook-color-tab-red);
+.tab_lime {
+  background: var(--notebook-lime);
 }
-.tab_blue {
-  background: var(--notebook-color-tab-blue);
-}
-.tab_green {
-  background: var(--notebook-color-tab-green);
+
+.tab_sage {
+  background: var(--notebook-sage);
 }
 
 .tab_loading {
-  background: var(--notebook-color-tab-loading);
+  background: var(--theme-text-muted);
+}
+
+.vcard {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid var(--theme-border);
+  box-shadow: var(--theme-shadow-sm);
+}
+
+.cardcontent {
+  padding: 0;
 }

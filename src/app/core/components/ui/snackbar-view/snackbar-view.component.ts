@@ -1,15 +1,30 @@
-import { Component, Inject, inject } from '@angular/core';
+import { Component, Input, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatIconModule } from '@angular/material/icon';
-import { MAT_SNACK_BAR_DATA } from '@angular/material/snack-bar';
 
 @Component({
-    selector: 'SnackbarView',
-    standalone: true,
-    imports: [CommonModule, MatIconModule],
-    templateUrl: './snackbar-view.component.html',
-    styleUrls: ['./snackbar-view.component.scss'],
+  selector: 'SnackbarView',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './snackbar-view.component.html',
+  styleUrls: ['./snackbar-view.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SnackbarViewComponent {
-  data = inject(MAT_SNACK_BAR_DATA);
+  @Input() set snack(val: { n_status: boolean | null; message: string | null; variant?: 'success' | 'error' | 'warning' } | null) {
+    if (val?.n_status && val?.message) {
+      this.message.set(val.message);
+      this.variant.set(val.variant ?? 'success');
+      this.visible.set(true);
+      if (this.timer) clearTimeout(this.timer);
+      this.timer = setTimeout(() => {
+        this.visible.set(false);
+        this.timer = null;
+      }, 4000);
+    }
+  }
+
+  message = signal('');
+  variant = signal<'success' | 'error' | 'warning'>('success');
+  visible = signal(false);
+  private timer: ReturnType<typeof setTimeout> | null = null;
 }

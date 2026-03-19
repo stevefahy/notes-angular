@@ -1,131 +1,189 @@
-@if (!noteLoaded() || token === null) {
+@if (loadError()) {
+  <div class="page_scrollable_header_breadcrumb_footer_list">
+    <div class="loading_routes error-state">
+      <p>Unable to load content.</p>
+      <a routerLink="/notebooks" class="back-link">Back to Notebooks</a>
+    </div>
+  </div>
+} @else if (!noteLoaded() || token === null) {
   <LoadingScreen />
-}
-
-<div ngClass="page_scrollable_header_breadcrumb_footer">
-  @if (noteLoaded() && token !== null) {
-    <div ngClass="view_container" id="view_container">
-      <ViewNote
-      [visible]="!isView()"
-      [splitScreen]="isSplitScreen()"
-      [viewText]="viewText()"
-      [updatedViewText]="updatedViewTextHandler"
-      />
-    <EditNote
-    [visible]="isView()"
-    [splitScreen]="isSplitScreen()"
-    [loadedText]="loadedText()"
-    [updateViewText]="updatedViewTextHandler"
-    [passUpdatedViewText]="updateEditTextProp()"
-    />
-</div>
-}
-</div>
-<Footer>
-@if (noteLoaded() && viewText().length > 0 && !isCreate() && isChanged()) {
-  <button
-    mat-button
-    color="secondary"
-    aria-label="Save Note button"
-    ngClass="contained medium breadcrumb_edit_fab button_fab"
-    (click)="saveNoteCallback()"
-    >
-    <span ngClass="icon_text">
-      <span ngClass="material-symbols-outlined button_icon white">
-        add_circle
-      </span>
-      Save Note
-    </span>
-  </button>
-}
-
-@if (noteLoaded() && viewText().length > 0 && isCreate()) {
-  <button
-    mat-button
-    color="secondary"
-    aria-label="Create Note button"
-    ngClass="contained medium breadcrumb_edit_fab button_fab"
-    (click)="createNotePost()"
-    >
-    <span ngClass="icon_text">
-      <span ngClass="material-symbols-outlined button_icon white">
-        add_circle
-      </span>
-      Create Note
-    </span>
-  </button>
-}
-
-@if (noteLoaded() && viewText().length === 0 && isCreate()) {
-  <button
-    mat-button
-    color="secondary"
-    aria-label="Example Note button"
-    ngClass="contained medium breadcrumb_edit_fab button_fab example_button"
-    (click)="exampleNote()"
-    >
-    <span ngClass="icon_text">
-      <span ngClass="material-symbols-outlined button_icon white"> egg </span>
-      Example
-    </span>
-  </button>
-}
-
-@if (noteLoaded() && !isSplitScreen()) {
-  <button
-    mat-button
-    color="secondary"
-    aria-label="Toggle View button"
-    ngClass="contained medium breadcrumb_edit_fab button_fab"
-    (click)="toggleEditHandlerCallback()"
-    >
-    @if (isView()) {
-      <span ngClass="icon_text">
-        <span ngClass="material-symbols-outlined button_icon white">
-          visibility
-        </span>
-        View
-      </span>
+} @else {
+  <div ngClass="page_scrollable_header_breadcrumb_footer">
+    @if (noteLoaded() && token !== null) {
+      <div
+        ngClass="view_container"
+        [class.editnote_box_split]="isSplitScreen()"
+        id="view_container"
+      >
+        <EditNote
+          [visible]="!isView() || isSplitScreen()"
+          [splitScreen]="isSplitScreen()"
+          [loadedText]="loadedText()"
+          [updateViewText]="updatedViewTextHandler"
+          [passUpdatedViewText]="updateEditTextProp()"
+        />
+        <ViewNote
+          [visible]="isView() || isSplitScreen()"
+          [splitScreen]="isSplitScreen()"
+          [viewText]="viewText()"
+          [updatedViewText]="updatedViewTextHandler"
+        />
+      </div>
     }
-    @if (!isView()) {
-      <span ngClass="icon_text">
-        <span ngClass="material-symbols-outlined button_icon white">
-          edit
-        </span>
-        Edit
-      </span>
-    }
-  </button>
-}
-
-@if (noteLoaded() && !isMobile()) {
-  <button
-    mat-button
-    color="secondary"
-    aria-label="Toggle Split Screen button"
-    ngClass="contained medium breadcrumb_edit_fab button_fab split_screen_button"
-    (click)="toggleSplitHandlerCallback()"
-    >
-    @if (isSplitScreen()) {
-      <span className="split_screen_icon">
-        <img
-          src="/assets/images/split_screen_icon_single.png"
-          alt="split screen icon"
-          width="30"
-          height="30"
-          /> </span
+  </div>
+  <Footer>
+    <div class="nb-footer-row">
+      @if (
+        noteLoaded() && viewText().length > 0 && !isCreate() && isChanged()
+      ) {
+        <button
+          class="btn-action-primary"
+          aria-label="Save Note button"
+          (click)="saveNoteCallback()"
+        >
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
           >
+            <path
+              d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"
+            />
+            <polyline points="17 21 17 13 7 13 7 21" />
+            <polyline points="7 3 7 8 15 8" />
+          </svg>
+          Save Note
+        </button>
       }
-      @if (!isSplitScreen()) {
-        <span className="split_screen_icon">
-          <img
-            src="/assets/images/split_screen_icon_double.png"
-            alt="split screen icon"
-            width="30"
-            height="30"
-            /> </span
+
+      @if (noteLoaded() && viewText().length > 0 && isCreate()) {
+        <button
+          class="btn-action-primary"
+          aria-label="Create Note button"
+          (click)="createNotePost()"
+        >
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 12 12"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M6 1v10M1 6h10"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+          </svg>
+          Create Note
+        </button>
+      }
+
+      @if (noteLoaded() && viewText().length === 0 && isCreate()) {
+        <button
+          class="btn-action-ghost"
+          aria-label="Example Note button"
+          (click)="exampleNote()"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">egg</span>
+          Example
+        </button>
+      }
+
+      @if (noteLoaded() && !isSplitScreen()) {
+        <button
+          class="btn-action-ghost"
+          aria-label="Toggle View button"
+          (click)="toggleEditHandlerCallback()"
+        >
+          @if (isView()) {
+            <svg
+              width="17"
+              height="17"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
             >
-        }
-      </button>
-    }
+              <path
+                d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+              />
+              <path
+                d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+              />
+            </svg>
+            Edit
+          }
+          @if (!isView()) {
+            <svg
+              width="17"
+              height="17"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            View
+          }
+        </button>
+      }
+
+      @if (noteLoaded() && !isMobile()) {
+        <button
+          class="btn-action-ghost"
+          aria-label="Toggle Split Screen button"
+          (click)="toggleSplitHandlerCallback()"
+        >
+          @if (isSplitScreen()) {
+            <svg
+              width="17"
+              height="17"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="6" y="2" width="12" height="20" rx="2" />
+            </svg>
+          }
+          @if (!isSplitScreen()) {
+            <svg
+              width="17"
+              height="17"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="2" y="2" width="8" height="20" rx="2" />
+              <rect x="14" y="2" width="8" height="20" rx="2" />
+            </svg>
+          }
+          Split Screen
+        </button>
+      }
+    </div>
   </Footer>
+}

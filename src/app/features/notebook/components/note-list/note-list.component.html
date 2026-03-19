@@ -1,47 +1,110 @@
-@if (userNotes()) {
-  <ul ngClass="notes_list">
-    @for (note of userNotes(); track trackuserNotes($index, note)) {
-      <li key="{note._id}" ngClass="notebook_list_bg">
-        <div ngClass="thumb_outer">
-          <a
-            routerLink="/notebook/{{ note.notebook }}/{{ note._id }}"
-            ngClass="thumb_outer_link"
-            (click)="(NoteLinkHandler)"
+<div class="notebooks-list-wrap">
+  <h2 class="page-heading">Your Notes</h2>
+  <div class="notes-list-container">
+    @if (userNotes()) {
+      <ul class="notes_list">
+        @for (note of userNotes(); track trackuserNotes($index, note)) {
+          <li class="note-card-outer">
+            @if (!onNotesEdit) {
+              <a
+                [routerLink]="['/notebook', note.notebook, note._id]"
+                class="note-card-link-overlay"
+                aria-label="Open note"
+              ></a>
+            }
+            <div
+              class="note-card-link"
+              [attr.role]="onNotesEdit ? 'button' : null"
+              [attr.tabindex]="onNotesEdit ? 0 : null"
+              (click)="onNotesEdit ? handleCardClick(note._id) : null"
+              (keydown)="
+                onNotesEdit ? handleCardKeydown(note._id, $event) : null
+              "
             >
-            <div ngClass="thumb_outer_link">
               <div
-                [id]="note._id"
-                ngClass="edit_link"
-                (click)="EditLinkHandler(note._id)"
+                class="note-card"
+                [class.note-card--selected]="isNoteSelected(note._id)"
+              >
+                <div
+                  class="note-select-col-wrapper"
+                  [class.is-visible]="onNotesEdit"
                 >
-                <mat-card ngClass="note_list_card">
-                  <mat-card-content ngClass="cardcontent">
-                    <div ngClass="thumb_image">
-                      <ViewNoteThumb [text]="note.note" />
+                  <div
+                    class="note-select-col"
+                    role="checkbox"
+                    [attr.tabindex]="onNotesEdit ? 0 : -1"
+                    [attr.aria-checked]="isNoteSelected(note._id)"
+                    (click)="
+                      onNotesEdit && handleCardClick(note._id);
+                      $event.stopPropagation()
+                    "
+                    (keydown)="
+                      onNotesEdit && handleCardKeydown(note._id, $event)
+                    "
+                  >
+                    <div
+                      class="sel-circle"
+                      [class.sel-circle--active]="isNoteSelected(note._id)"
+                    >
+                      @if (isNoteSelected(note._id)) {
+                        <svg
+                          width="10"
+                          height="8"
+                          viewBox="0 0 10 8"
+                          fill="none"
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M1 4l3 3 5-6"
+                            stroke="white"
+                            stroke-width="1.6"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                      }
                     </div>
-                    <div ngClass="date_format date_format_notes">
-                      {{ dateFormat(note.updatedAt!) }}
-                    </div>
-                  </mat-card-content>
-                </mat-card>
+                  </div>
+                </div>
+                <div class="note-card-body">
+                  <div class="note-title">{{ getTitle(note.note) }}</div>
+                  <div class="note-thumb-preview">
+                    <ViewNoteThumb [text]="note.note" />
+                  </div>
+                  <div class="note-foot">
+                    <span class="note-date">{{
+                      dateFormat(note.updatedAt!)
+                    }}</span>
+                    @switch (getTag(note.note)) {
+                      @case ("todo") {
+                        <span class="note-tag tag-todo">Todo</span>
+                      }
+                      @case ("table") {
+                        <span class="note-tag tag-table">Table</span>
+                      }
+                      @case ("code") {
+                        <span class="note-tag tag-code">Code</span>
+                      }
+                      @case ("image") {
+                        <span class="note-tag tag-image">Image</span>
+                      }
+                      @case ("list") {
+                        <span class="note-tag tag-list">List</span>
+                      }
+                      @case ("text") {
+                        <span class="note-tag tag-text">Text</span>
+                      }
+                      @case ("empty") {
+                        <span class="note-tag tag-empty">Empty</span>
+                      }
+                    }
+                  </div>
+                </div>
               </div>
             </div>
-          </a>
-          @if (onNotesEdit) {
-            <div ngClass="thumb_select_outer">
-              <div ngClass="thumb_select">
-                <input
-                  id="`input_{{ note._id }}`"
-                  type="checkbox"
-                  name="Status"
-                  value="{{ note._id }}"
-                  (change)="checkboxStatus($event)"
-                  />
-              </div>
-            </div>
-          }
-        </div>
-      </li>
+          </li>
+        }
+      </ul>
     }
-  </ul>
-}
+  </div>
+</div>

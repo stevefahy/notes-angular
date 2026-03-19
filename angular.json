@@ -25,13 +25,13 @@
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": ["src/favicon.ico", "src/assets"],
-            "styles": ["src/styles.scss"],
+            "styles": ["src/styles/theme-variables.css", "src/styles.scss"],
             "scripts": [],
             "allowedCommonJsDependencies": [
               "matter",
               "front-matter",
               "js-yaml",
-              "highlight.js",
+              "prismjs",
               "markdown-it",
               "markdown-it-emoji",
               "markdown-it-footnote",
@@ -51,13 +51,13 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kb",
+                  "maximumWarning": "530kb",
                   "maximumError": "1mb"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "4kb"
+                  "maximumWarning": "4kb",
+                  "maximumError": "5kb"
                 }
               ],
               "outputHashing": "all"
@@ -102,7 +102,7 @@
             "tsConfig": "tsconfig.spec.json",
             "inlineStyleLanguage": "scss",
             "assets": ["src/favicon.ico", "src/assets"],
-            "styles": ["src/styles.scss"],
+            "styles": ["src/styles/theme-variables.css", "src/styles.scss"],
             "scripts": []
           }
         }

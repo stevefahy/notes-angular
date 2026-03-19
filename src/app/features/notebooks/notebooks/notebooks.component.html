@@ -1,12 +1,21 @@
-@if (!notebooksLoaded()) {
+@if (!notebooksLoaded() && !loadError()) {
   <div>
     <LoadingScreen />
   </div>
 }
-<div ngClass="page_scrollable_header_breadcrumb_footer_list">
-  @if (notebooksLoaded() && userNotebooks().notebooks) {
-    <div>
-      <NotebooksList [notebooks]="userNotebooks()" />
+@if (loadError()) {
+  <div class="page_scrollable_header_breadcrumb_footer_list">
+    <div class="loading_routes error-state">
+      <p>Unable to load notebooks.</p>
+      <a routerLink="/notebooks" class="back-link">Back to Notebooks</a>
     </div>
-  }
-</div>
+  </div>
+}
+@if (notebooksLoaded() && !loadError() && userNotebooks().notebooks) {
+  <div class="page_scrollable_header_breadcrumb_footer_list">
+    <NotebooksList
+      [notebooks]="userNotebooks()"
+      (notebookAdded)="onNotebookAdded($event)"
+    />
+  </div>
+}

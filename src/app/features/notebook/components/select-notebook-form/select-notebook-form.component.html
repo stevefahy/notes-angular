@@ -1,51 +1,79 @@
-<div ngClass="dialogue_container">
-  <h2 mat-dialog-title ngClass="dialogue-title">Move to Notebook</h2>
-  <div mat-dialog-content>
-    <form ngClass="form">
-      <div ngClass="control">
-        <label htmlFor="new-notebook-cover">Name</label>
-        <select name="notebooks" id="notebooks" value="selectedNotebook" (change)="handleChange($event)">
-          <option defaultValue="true" value="default">
-            Select a notebook...
-          </option>
-          @if (notebooks && notebooksSorted()) {
-          @for (
-          notebook of notebooksSorted(); track trackByNotebooks($index,
-          notebook)) {
-          @if (notebook._id !== notebookId) {
-          <option [value]="notebook._id">
-            {{ notebook.notebook_name }}
-          </option>
+<div
+  class="sheet-overlay"
+  role="button"
+  tabindex="0"
+  aria-label="Close dialog"
+  (click)="cancelHandler($event)"
+  (keydown)="onOverlayKeydown($event)"
+>
+  <div
+    class="bottom-sheet"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="move-notebook-title"
+    tabindex="-1"
+    (click)="$event.stopPropagation()"
+    (keydown)="onSheetKeydown($event)"
+    #sheetRef
+  >
+    <div class="sheet-handle"></div>
+
+    <h2 id="move-notebook-title" class="sheet-title">Move to Notebook</h2>
+
+    <form id="move-notebook-form" (ngSubmit)="submitHandler($event)">
+      <div class="sheet-field">
+        <span class="form-label" id="notebook-options-label">Notebook</span>
+        <div
+          class="notebook-options"
+          role="listbox"
+          tabindex="-1"
+          aria-labelledby="notebook-options-label"
+          (keydown)="handleOptionsKeydown($event)"
+        >
+          @for (nb of notebooksFiltered(); track nb._id) {
+            <button
+              type="button"
+              class="notebook-option"
+              [class.selected]="selectedNotebook() === nb._id"
+              [id]="'option-' + nb._id"
+              role="option"
+              [attr.aria-selected]="selectedNotebook() === nb._id"
+              (click)="selectNotebook(nb._id)"
+            >
+              <span
+                class="option-cover"
+                [ngClass]="'option-cover-' + getDisplayCover(nb.notebook_cover)"
+              >
+                <span
+                  class="nb-spine"
+                  [ngClass]="'nb-spine-' + getDisplayCover(nb.notebook_cover)"
+                ></span>
+              </span>
+              <span class="option-name">{{ nb.notebook_name }}</span>
+            </button>
           }
-          }
-          }
-        </select>
+        </div>
       </div>
     </form>
 
-    <div ngClass="button_row">
-      <div ngClass="action">
-        <div ngClass="move">
-          <button mat-button [disabled]="!formIsValid()" color="secondary" aria-label="Move Note button"
-            ngClass="contained medium" (click)="submitHandler($event)">
-            <span ngClass="icon_text"> Move Note </span>
-          </button>
-        </div>
-        <div ngClass="cancel">
-          <button mat-button color="secondary" aria-label="Edit notebook button" ngClass="contained medium"
-            (click)="cancelHandler($event)">
-            <span ngClass="icon_text">
-              <span ngClass="material-symbols-outlined button_icon white">
-                cancel
-              </span>
-              Cancel
-            </span>
-          </button>
-        </div>
-      </div>
+    <div class="sheet-actions">
+      <button
+        type="button"
+        class="btn-cancel"
+        (click)="cancelHandler($event)"
+        aria-label="Cancel button"
+      >
+        Cancel
+      </button>
+      <button
+        type="button"
+        class="btn-move"
+        [disabled]="!formIsValid()"
+        aria-label="Move Note button"
+        (click)="submitHandler($event)"
+      >
+        Move Note
+      </button>
     </div>
-    @if (error().error_state) {
-    <ng-container #errorcontainer></ng-container>
-    }
   </div>
 </div>

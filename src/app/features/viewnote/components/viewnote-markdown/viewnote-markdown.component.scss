@@ -1,5 +1,5 @@
 .codebox pre {
-  box-shadow: rgba(0, 0, 0, 0.4) 1.95px 1.95px 2.6px;
+  box-shadow: 1.95px 1.95px 2.6px #0006;
 }
 
 .codebox_language p {
@@ -25,6 +25,10 @@
 
 // Read-only styling for checkboxes when update callback is not provided
 .md-readonly .task-list input[type="checkbox"] {
+  pointer-events: none;
+  cursor: default;
+}
+.md-readonly .task-list .custom-checkbox label {
   pointer-events: none;
   cursor: default;
 }

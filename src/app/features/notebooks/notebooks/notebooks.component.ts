@@ -1,23 +1,34 @@
 import { Component, OnDestroy, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { GetNotebooks, IAuthContext } from '../../../core/model/global';
+import { RouterLink } from '@angular/router';
+import {
+  GetNotebooks,
+  IAuthContext,
+  Notebook,
+} from '../../../core/model/global';
 import { AuthService } from '../../../core/services/auth.service';
 import { Store } from '@ngrx/store';
-import { NotificationActions } from '../../../store/actions/notification.actions';
+import { SnackService } from '../../../core/services/snack.service';
 import { getNotebooks } from '../../../core/helpers/getNotebooks';
 import { Subject, takeUntil } from 'rxjs';
 import { LoadingScreenComponent } from '../../../core/components/ui/loading-screen/loading-screen.component';
 import { NotebookslistComponent } from '../components/notebookslist/notebookslist.component';
 
 @Component({
-    selector: 'Notebooks',
-    standalone: true,
-    imports: [CommonModule, LoadingScreenComponent, NotebookslistComponent],
-    templateUrl: './notebooks.component.html',
-    styleUrls: ['./notebooks.component.scss'],
+  selector: 'Notebooks',
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterLink,
+    LoadingScreenComponent,
+    NotebookslistComponent,
+  ],
+  templateUrl: './notebooks.component.html',
+  styleUrls: ['./notebooks.component.scss'],
 })
 export class NotebooksComponent implements OnInit, OnDestroy {
   notebooksLoaded = signal<boolean>(false);
+  loadError = signal<string | null>(null);
   userNotebooks = signal<GetNotebooks>({ success: false, notebooks: [] });
 
   loading: boolean | null;
@@ -25,6 +36,7 @@ export class NotebooksComponent implements OnInit, OnDestroy {
 
   private authService = inject(AuthService);
   private store = inject(Store);
+  private snack = inject(SnackService);
 
   onDestroy$: Subject<void> = new Subject();
 
@@ -47,21 +59,29 @@ export class NotebooksComponent implements OnInit, OnDestroy {
     this.token = context.token;
   };
 
-  readonly showNotification = (msg: string) => {
-    this.store.dispatch(
-      NotificationActions.showNotification({
-        notification: { n_status: 'error', title: 'Error!', message: msg },
-      })
-    );
+  readonly showErrorSnack = (err: unknown, fromServer = false) => {
+    this.snack.showErrorSnack(err, fromServer);
+  };
+
+  onNotebookAdded = (notebook: Notebook) => {
+    const current = this.userNotebooks();
+    if (current.success && current.notebooks) {
+      this.userNotebooks.set({
+        success: true,
+        notebooks: [notebook, ...current.notebooks],
+      });
+    }
   };
 
   // Get the Notebooks
   loadNotebooks = async () => {
-    if (!this.notebooksLoaded() && this.token) {
+    if (!this.notebooksLoaded() && !this.loadError() && this.token) {
       try {
         const response = await getNotebooks(this.token);
         if (response.error) {
-          this.showNotification(`${response.error}`);
+          this.loadError.set(response.error);
+          this.showErrorSnack(response.error, response.fromServer === true);
+          this.notebooksLoaded.set(true);
           return;
         }
         if (response.success) {
@@ -69,7 +89,10 @@ export class NotebooksComponent implements OnInit, OnDestroy {
           this.filterNotebooks();
         }
       } catch (err) {
-        this.showNotification(`${err}`);
+        const msg = err instanceof Error ? err.message : String(err ?? '');
+        this.loadError.set(msg);
+        this.showErrorSnack(err, false);
+        this.notebooksLoaded.set(true);
         return;
       }
     }
@@ -101,7 +124,10 @@ export class NotebooksComponent implements OnInit, OnDestroy {
       this.notebooksLoaded.set(true);
     }
     if (error_found) {
-      this.showNotification(error_found);
+      const response = this.userNotebooks();
+      const fromServer =
+        'fromServer' in response && response.fromServer === true;
+      this.showErrorSnack(error_found, fromServer);
     }
   };
 }

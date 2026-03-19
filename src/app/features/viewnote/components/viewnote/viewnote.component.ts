@@ -1,6 +1,5 @@
 import { Component, Input, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatCardModule } from '@angular/material/card';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { NoteEditorView } from 'src/app/core/model/global';
 import { ViewnoteMarkdownComponent } from '../viewnote-markdown/viewnote-markdown.component';
@@ -9,7 +8,7 @@ import fm from 'front-matter';
 @Component({
   selector: 'ViewNote',
   standalone: true,
-  imports: [CommonModule, MatCardModule, NgxSkeletonLoaderModule, ViewnoteMarkdownComponent],
+  imports: [CommonModule, NgxSkeletonLoaderModule, ViewnoteMarkdownComponent],
   templateUrl: './viewnote.component.html',
   styleUrls: ['./viewnote.component.scss'],
 })
@@ -26,13 +25,13 @@ export class ViewnoteComponent implements NoteEditorView, OnInit {
   }
   @Input() updatedViewText: (updatedEdit: string) => void;
 
-  constructor() { }
+  constructor() {}
 
   content: string;
   contextView = signal<string>('');
   isLoaded = signal<boolean>(false);
 
-  ngOnInit(): void { }
+  ngOnInit(): void {}
 
   loadedTimer: NodeJS.Timeout;
   hideSkeleton = () => {

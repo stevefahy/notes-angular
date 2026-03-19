@@ -1,0 +1,17 @@
+<div class="page_scrollable_header_breadcrumb_footer_list">
+  <div class="loading_routes error-state">
+    <p>Unable to load this page. Please try again.</p>
+    <a routerLink="/notebooks" class="back-link">Back to Notebooks</a>
+    <button class="btn-action-ghost" type="button" (click)="retry()">
+      Retry
+    </button>
+  </div>
+</div>
+<Footer>
+  <div class="nb-footer-row">
+    <button class="btn-action-ghost" type="button" (click)="retry()">
+      Retry
+    </button>
+    <a routerLink="/notebooks" class="btn-action-ghost">Back to Notebooks</a>
+  </div>
+</Footer>

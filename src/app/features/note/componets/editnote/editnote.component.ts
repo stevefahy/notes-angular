@@ -10,15 +10,14 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatCardModule } from '@angular/material/card';
 import { NoteEditor } from 'src/app/core/model/global';
 
 @Component({
-    selector: 'EditNote',
-    standalone: true,
-    imports: [CommonModule, MatCardModule],
-    templateUrl: './editnote.component.html',
-    styleUrls: ['./editnote.component.scss'],
+  selector: 'EditNote',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './editnote.component.html',
+  styleUrls: ['./editnote.component.scss'],
 })
 export class EditnoteComponent
   implements NoteEditor, OnInit, AfterViewInit, OnChanges

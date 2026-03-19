@@ -10,10 +10,14 @@ import { logout } from '../helpers/logout';
 import { refreshtoken } from '../helpers/refreshtoken';
 import { signup } from '../helpers/signup';
 import { Store } from '@ngrx/store';
-import { NotificationActions } from 'src/app/store/actions/notification.actions';
+import { SnackService } from './snack.service';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import APPLICATION_CONSTANTS from 'src/app/core/application-constants/application-constants';
+import {
+  normalizeErrorToString,
+  toUserFriendlyError,
+} from '../lib/error-message-map';
 import { JwtHelperService } from '@auth0/angular-jwt';
 
 const AC = APPLICATION_CONSTANTS;
@@ -27,13 +31,14 @@ export class AuthService {
   constructor(
     private http: HttpClient,
     private store: Store,
-    private router: Router
+    private router: Router,
+    private snack: SnackService,
   ) {
     this.AutoRefreshToken();
     if (typeof document !== 'undefined') {
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
-          this.verifyRefreshTokenWithRetry();
+          setTimeout(() => this.verifyRefreshTokenWithRetry(), 500);
         }
       });
     }
@@ -42,6 +47,7 @@ export class AuthService {
   interval: NodeJS.Timeout;
   AutoRefreshToken = () => {
     this.interval = setInterval(() => {
+      if (document.visibilityState === 'hidden') return;
       if (!this.authContext().success) {
         this.autoLogout();
       } else {
@@ -54,12 +60,8 @@ export class AuthService {
     return this.http.get('http://localhost:5000');
   }
 
-  readonly showNotification = (msg: string) => {
-    this.store.dispatch(
-      NotificationActions.showNotification({
-        notification: { n_status: 'error', title: 'Error!', message: msg },
-      })
-    );
+  readonly showErrorSnack = (err: unknown, fromServer = false) => {
+    this.snack.showErrorSnack(err, fromServer);
   };
 
   readonly resetAuthContext = () => {
@@ -79,7 +81,7 @@ export class AuthService {
       try {
         const response = await logout(token);
         if (response.error) {
-          this.showNotification(`${response.error}`);
+          this.showErrorSnack(response.error, response.fromServer === true);
           return;
         }
         if (response.success) {
@@ -89,7 +91,7 @@ export class AuthService {
           this.router.navigate([`${AC.LOGIN_PAGE}`]);
         }
       } catch (err) {
-        this.showNotification(`${err}`);
+        this.showErrorSnack(err, false);
         return;
       }
     }
@@ -163,36 +165,40 @@ export class AuthService {
     this.autoLogout();
   };
 
+  private refreshInProgress: Promise<AuthAuthenticate | undefined> | null =
+    null;
+
   readonly getRefreshToken = async () => {
-    try {
-      const response = await refreshtoken();
-      if (!response) {
+    if (this.refreshInProgress) return this.refreshInProgress;
+    const promise = (async () => {
+      try {
+        const response = await refreshtoken();
+        if (!response) return;
+        if (response.error) return;
+        if (response.success) return response;
+      } catch {
         return;
       }
-      if (response.error) {
-        // this.showNotification(`${response.error}`);
-        return;
-      }
-      if (response.success) {
-        return response;
-      }
-    } catch (err) {
-      // this.showNotification(`${err}`);
       return;
+    })();
+    this.refreshInProgress = promise;
+    try {
+      return await promise;
+    } finally {
+      this.refreshInProgress = null;
     }
-    return;
   };
 
   readonly handleLogout = async () => {
     const context = await this.getRefreshToken();
-    if (context && context.token !== null) {
+    if (context && typeof context.token === 'string') {
       this.logoutHandler(context.token);
     }
   };
 
   readonly handleLogin = async (
     email: string,
-    password: string
+    password: string,
   ): Promise<AuthAuthenticate> => {
     if (email && password) {
       try {
@@ -201,7 +207,6 @@ export class AuthService {
           return;
         }
         if (response.error) {
-          this.showNotification(`${response.error}`);
           return response;
         }
         if (response.success) {
@@ -218,8 +223,7 @@ export class AuthService {
         }
         return response;
       } catch (err) {
-        this.showNotification(`${err}`);
-        return;
+        return { error: toUserFriendlyError(err), fromServer: false };
       }
     } else {
       return;
@@ -230,7 +234,7 @@ export class AuthService {
     username: string,
     email: string,
     password: string,
-    framework: string
+    framework: string,
   ): Promise<AuthSignup> => {
     if (email && password) {
       try {
@@ -238,14 +242,16 @@ export class AuthService {
           username,
           email,
           password,
-          framework
+          framework,
         );
         if (!response) {
           return { error: `${AC.GENERAL_ERROR}` };
         }
         if (response.error) {
-          this.showNotification(`${response.error}`);
-          return { error: `${response.error}` };
+          return {
+            error: normalizeErrorToString(response.error),
+            fromServer: response.fromServer,
+          };
         }
         if (response.success) {
           this.authContext.update((authContext: IAuthContext) => {
@@ -266,8 +272,7 @@ export class AuthService {
           };
         }
       } catch (err) {
-        this.showNotification(`${err}`);
-        return { error: `${err}` };
+        return { error: toUserFriendlyError(err), fromServer: false };
       }
     } else {
       return { error: `${AC.GENERAL_ERROR}` };

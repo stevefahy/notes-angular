@@ -1,0 +1,1 @@
+import{a as o}from"./chunk-5VXIHAM3.js";import{o as r}from"./chunk-IL5IBFLQ.js";import{$ as i,nb as e}from"./chunk-4MB6GM7K.js";var d=(()=>{class t{static{this.components={dynamicComponent:o}}static{this.\u0275fac=function(n){return new(n||t)}}static{this.\u0275mod=e({type:t})}static{this.\u0275inj=i({imports:[r,o]})}}return t})();export{d as LazyLoadedModule};

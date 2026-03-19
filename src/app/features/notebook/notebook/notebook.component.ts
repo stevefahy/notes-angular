@@ -17,10 +17,10 @@ import {
 } from '../../../core/model/global';
 import { AuthService } from '../../../core/services/auth.service';
 import { Store } from '@ngrx/store';
-import { NotificationActions } from '../../../store/actions/notification.actions';
+import { SnackService } from '../../../core/services/snack.service';
 import { NotebookEditActions } from '../../../store/actions/notebook_edit.actions';
 import { selectEditing } from 'src/app/store/selectors/notebook_edit.selector';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { getNotes } from '../../../core/helpers/getNotes';
 import { getNotebook } from '../../../core/helpers/getNotebook';
@@ -31,41 +31,56 @@ import { deleteNotebook } from '../../../core/helpers/deleteNotebook';
 import { editNotebook } from '../../../core/helpers/editNotebook';
 import { moveNotes } from '../../../core/helpers/moveNotes';
 import { SelectNotebookFormComponent } from '../components/select-notebook-form/select-notebook-form.component';
-import {
-  MatDialog,
-  MatDialogConfig,
-  MatDialogRef,
-} from '@angular/material/dialog';
 import { AddNotebookFormComponent } from '../../notebooks/components/add-notebook-form/add-notebook-form.component';
 import { Subscription, Subject, takeUntil } from 'rxjs';
 import { LoadingScreenComponent } from '../../../core/components/ui/loading-screen/loading-screen.component';
 import { FooterComponent } from '../../../core/components/footer/footer.component';
 import { NoteListComponent } from '../components/note-list/note-list.component';
+import { EditNotesService } from '../../../core/services/edit-notes.service';
+import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
-    selector: 'Notebook',
-    standalone: true,
-    imports: [
-      CommonModule,
-      MatButtonModule,
-      MatIconModule,
-      LoadingScreenComponent,
-      FooterComponent,
-      NoteListComponent,
-    ],
-    templateUrl: './notebook.component.html',
-    styleUrls: ['./notebook.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'Notebook',
+  standalone: true,
+  animations: [
+    trigger('sheetSlide', [
+      transition(':enter', [
+        style({ transform: 'translateY(100%)' }),
+        animate(
+          '380ms cubic-bezier(0.33, 1, 0.68, 1)',
+          style({ transform: 'translateY(0)' }),
+        ),
+      ]),
+      transition(':leave', [
+        animate(
+          '300ms cubic-bezier(0.33, 1, 0.68, 1)',
+          style({ transform: 'translateY(100%)' }),
+        ),
+      ]),
+    ]),
+  ],
+  imports: [
+    CommonModule,
+    RouterLink,
+    MatButtonModule,
+    MatIconModule,
+    LoadingScreenComponent,
+    FooterComponent,
+    NoteListComponent,
+    SelectNotebookFormComponent,
+    AddNotebookFormComponent,
+  ],
+  templateUrl: './notebook.component.html',
+  styleUrls: ['./notebook.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NotebookComponent implements OnInit, OnDestroy {
   private activatedRoute = inject(ActivatedRoute);
   private authService = inject(AuthService);
   private store = inject(Store);
   private router = inject(Router);
-  public dialog = inject(MatDialog);
-
-  dialogRefSelectNotebook: MatDialogRef<SelectNotebookFormComponent, any>;
-  dialogRefEditNotebook: MatDialogRef<AddNotebookFormComponent, any>;
+  private editNotesService = inject(EditNotesService);
+  private snack = inject(SnackService);
 
   notebookId: string;
   loading: boolean | null;
@@ -86,10 +101,13 @@ export class NotebookComponent implements OnInit, OnDestroy {
   notebooksLoaded$ = toObservable(this.notebooksLoaded);
 
   notebook = signal<Notebook | null>(null);
+  loadError = signal<string | null>(null);
   userNotebooks = signal<Notebook[] | null>(null);
   isSelected = signal<SelectedNote | null>(null);
   moveNote = signal(false);
   enableEditNotebook = signal(false);
+  showEditNotebookForm = signal(false);
+  isClosingEditNotebook = signal(false);
   editNotes = signal(false);
   clearEditNotes = signal(false);
 
@@ -98,6 +116,8 @@ export class NotebookComponent implements OnInit, OnDestroy {
   onDestroy$: Subject<void> = new Subject();
 
   ngOnDestroy(): void {
+    this.editNotesService.clear();
+    this.store.dispatch(NotebookEditActions.editing({ status: false }));
     this.onDestroy$.next();
     this.onDestroy$.complete();
   }
@@ -116,7 +136,8 @@ export class NotebookComponent implements OnInit, OnDestroy {
         this.updateContext(res);
       });
 
-    this.store.select(selectEditing)
+    this.store
+      .select(selectEditing)
       .pipe(takeUntil(this.onDestroy$))
       .subscribe((editing) => {
         if (editing.status === true) {
@@ -165,12 +186,8 @@ export class NotebookComponent implements OnInit, OnDestroy {
     this.token = context.token;
   };
 
-  readonly showNotification = (msg: string) => {
-    this.store.dispatch(
-      NotificationActions.showNotification({
-        notification: { n_status: 'error', title: 'Error!', message: msg },
-      })
-    );
+  readonly showErrorSnack = (err: unknown, fromServer = false) => {
+    this.snack.showErrorSnack(err, fromServer);
   };
 
   sortNotes = (notes: Note[]) => {
@@ -193,14 +210,22 @@ export class NotebookComponent implements OnInit, OnDestroy {
   };
 
   loadNotes = async () => {
-    if (!this.notesLoaded() && this.token && this.notebookId) {
+    if (
+      !this.notesLoaded() &&
+      !this.loadError() &&
+      this.token &&
+      this.notebookId
+    ) {
       this.notesLoadedDelay.set(false);
       this.notesLoaded.set(false);
       try {
         const response = await getNotes(this.token, this.notebookId);
         this.notebookLoaded.set(true);
         if (response.error) {
-          this.showNotification(`${response.error}`);
+          this.loadError.set(response.error);
+          this.showErrorSnack(response.error, response.fromServer === true);
+          this.notesLoaded.set(true);
+          this.notesLoadedDelay.set(true);
           return;
         }
         if (response.success) {
@@ -209,7 +234,12 @@ export class NotebookComponent implements OnInit, OnDestroy {
           this.notesLoadedDelay.set(true);
         }
       } catch (err) {
-        this.showNotification(`${err}`);
+        this.loadError.set(
+          err instanceof Error ? err.message : String(err ?? ''),
+        );
+        this.showErrorSnack(err, false);
+        this.notebookLoaded.set(true);
+        this.notesLoaded.set(true);
         this.notesLoadedDelay.set(true);
         return;
       }
@@ -217,13 +247,20 @@ export class NotebookComponent implements OnInit, OnDestroy {
   };
 
   loadNotebook = async () => {
-    if (!this.notebookLoaded() && this.token && this.notebookId) {
+    if (
+      !this.notebookLoaded() &&
+      !this.loadError() &&
+      this.token &&
+      this.notebookId
+    ) {
       this.notebookLoaded.set(false);
       try {
         const response = await getNotebook(this.token, this.notebookId);
         this.notebookLoaded.set(true);
         if (response.error) {
-          this.showNotification(`${response.error}`);
+          this.loadError.set(response.error);
+          this.showErrorSnack(response.error, response.fromServer === true);
+          this.notesLoaded.set(true);
           return;
         }
         if (response.success) {
@@ -231,8 +268,12 @@ export class NotebookComponent implements OnInit, OnDestroy {
           this.store.dispatch(NotebookEditActions.edited(response.notebook));
         }
       } catch (err) {
-        this.showNotification(`${err}`);
+        this.loadError.set(
+          err instanceof Error ? err.message : String(err ?? ''),
+        );
+        this.showErrorSnack(err, false);
         this.notebookLoaded.set(true);
+        this.notesLoaded.set(true);
         return;
       }
     }
@@ -245,14 +286,14 @@ export class NotebookComponent implements OnInit, OnDestroy {
         const response = await getNotebooks(this.token);
         this.notebooksLoaded.set(true);
         if (response.error) {
-          this.showNotification(`${response.error}`);
+          this.showErrorSnack(response.error, response.fromServer === true);
           return;
         }
         if (response.success) {
           this.userNotebooks.set(response.notebooks);
         }
       } catch (err) {
-        this.showNotification(`${err}`);
+        this.showErrorSnack(err, false);
         this.notebooksLoaded.set(true);
         return;
       }
@@ -261,58 +302,50 @@ export class NotebookComponent implements OnInit, OnDestroy {
 
   updateSelected = (selected: SelectedNote) => {
     this.isSelected.update((prev) => selected);
+    this.editNotesService.set(
+      this.editNotes(),
+      selected?.selected?.length ?? 0,
+    );
   };
 
-  openSelectNotebookDialog(): void {
-    const dialogConfig = new MatDialogConfig();
-    dialogConfig.disableClose = true;
-    dialogConfig.autoFocus = true;
-    dialogConfig.data = {
-      notebooks: this.userNotebooks(),
-      onCancel: this.cancelHandler,
-      moveNotes: this.moveNoteHandler,
-      notebookId: this.notebookId,
-    };
-    this.dialogRefSelectNotebook = this.dialog.open(
-      SelectNotebookFormComponent,
-      dialogConfig
-    );
-  }
-
-  openAddNotebookFormDialog(): void {
-    const dialogConfig = new MatDialogConfig();
-    dialogConfig.disableClose = true;
-    dialogConfig.autoFocus = true;
-    dialogConfig.data = {
-      notebook: this.notebook(),
-      method: 'edit',
-      editNotebook: this.editNotebookHandler,
-      onCancel: this.cancelEditHandler,
-    };
-    this.dialogRefEditNotebook = this.dialog.open(
-      AddNotebookFormComponent,
-      dialogConfig
-    );
+  openEditNotebookForm(): void {
+    this.showEditNotebookForm.set(true);
   }
 
   moveNoteFormHandler = () => {
     this.moveNote.update((prevState) => true);
-    this.openSelectNotebookDialog();
   };
 
-  cancelHandler = () => {
+  cancelMoveHandler = () => {
     this.moveNote.update((prevState) => false);
-    this.dialogRefSelectNotebook.close();
   };
   cancelEditHandler = () => {
     this.enableEditNotebook.update((prevState) => false);
+    this.showEditNotebookForm.set(false);
+    this.isClosingEditNotebook.set(false);
     this.store.dispatch(NotebookEditActions.editing({ status: false }));
-    this.dialogRefEditNotebook.close();
+  };
+
+  requestCloseEditHandler = () => {
+    this.isClosingEditNotebook.set(true);
+  };
+
+  onEditNotebookSheetDone = (e: { toState: string }) => {
+    if (e.toState === 'void') {
+      this.isClosingEditNotebook.set(false);
+      this.cancelEditHandler();
+    }
+  };
+
+  onEditNotebookOverlayClick = (e: MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      this.isClosingEditNotebook.set(true);
+    }
   };
 
   editNotebookBtnHandler = () => {
     this.enableEditNotebook.update((prevState) => true);
-    this.openAddNotebookFormDialog();
+    this.openEditNotebookForm();
   };
 
   addNoteFormHandler = () => {
@@ -322,6 +355,7 @@ export class NotebookComponent implements OnInit, OnDestroy {
   editNoteFormHandler = () => {
     this.editNotes.set(true);
     this.clearEditNotes.set(false);
+    this.editNotesService.set(true, this.isSelected()?.selected?.length ?? 0);
   };
 
   resetNotesSelected = () => {
@@ -335,6 +369,7 @@ export class NotebookComponent implements OnInit, OnDestroy {
     this.editNotes.set(false);
     this.clearEditNotes.set(true);
     this.resetNotesSelected();
+    this.editNotesService.clear();
   };
 
   updateNotebookDate = (notebookId: string, notebookLatesDate: string) => {
@@ -354,7 +389,7 @@ export class NotebookComponent implements OnInit, OnDestroy {
         const response = await deleteNotes(this.token, notesSelected);
         this.notebookLoaded.set(true);
         if (response.error) {
-          this.showNotification(`${response.error}`);
+          this.showErrorSnack(response.error, response.fromServer === true);
           return;
         }
         if (response.success) {
@@ -400,7 +435,7 @@ export class NotebookComponent implements OnInit, OnDestroy {
           this.cancelEditNoteFormHandler();
         }
       } catch (err) {
-        this.showNotification(`${err}`);
+        this.showErrorSnack(err, false);
         return;
       }
     }
@@ -408,42 +443,46 @@ export class NotebookComponent implements OnInit, OnDestroy {
 
   editNotebookDateHandler = async (
     notebookID: string,
-    notebookUpdated: string
+    notebookUpdated: string,
   ) => {
     if (this.token && notebookID && notebookUpdated) {
       try {
         const response = await editNotebookDate(
           this.token,
           notebookID,
-          notebookUpdated
+          notebookUpdated,
         );
         if (response.error) {
-          this.showNotification(`${response.error}`);
+          this.showErrorSnack(response.error, response.fromServer === true);
           return;
         }
         if (response.success) {
         }
       } catch (err) {
-        this.showNotification(`${err}`);
+        this.showErrorSnack(err, false);
         return;
       }
     }
   };
 
   deleteNotebookHandler = async () => {
+    if (!navigator.onLine) {
+      this.showErrorSnack('Please check your network and try again.', false);
+      return;
+    }
     const notebook_id = this.notebook()!._id;
     if (this.token && notebook_id && notebook_id.length > 0) {
       try {
         const response = await deleteNotebook(this.token, notebook_id);
         if (response.error) {
-          this.showNotification(`${response.error}`);
+          this.showErrorSnack(response.error, response.fromServer === true);
           return;
         }
         if (response.success) {
           this.router.navigate([`/notebooks`]);
         }
       } catch (err) {
-        this.showNotification(`${err}`);
+        this.showErrorSnack(err, false);
         return;
       }
     }
@@ -453,7 +492,7 @@ export class NotebookComponent implements OnInit, OnDestroy {
     notebookID: string,
     notebookName: string,
     notebookCover: string,
-    notebookUpdated: string
+    notebookUpdated: string,
   ) => {
     if (
       this.token &&
@@ -468,22 +507,22 @@ export class NotebookComponent implements OnInit, OnDestroy {
           notebookID,
           notebookName,
           notebookCover,
-          notebookUpdated
+          notebookUpdated,
         );
         if (response.error) {
-          this.showNotification(`${response.error}`);
+          this.showErrorSnack(response.error, response.fromServer === true);
           return;
         }
         if (response.success) {
           this.notebook.update((prev) => response.notebook_edited);
           this.store.dispatch(NotebookEditActions.editing({ status: false }));
           this.store.dispatch(
-            NotebookEditActions.edited(response.notebook_edited)
+            NotebookEditActions.edited(response.notebook_edited),
           );
           this.enableEditNotebook.update((prev) => false);
         }
       } catch (err) {
-        this.showNotification(`${err}`);
+        this.showErrorSnack(err, false);
         return;
       }
     }
@@ -519,10 +558,10 @@ export class NotebookComponent implements OnInit, OnDestroy {
           this.token,
           notebookID,
           notesSelected,
-          latestUpdatedDate
+          latestUpdatedDate,
         );
         if (response.error) {
-          this.showNotification(`${response.error}`);
+          this.showErrorSnack(response.error, response.fromServer === true);
           return;
         }
         if (response.success) {
@@ -564,7 +603,7 @@ export class NotebookComponent implements OnInit, OnDestroy {
           this.cancelEditNoteFormHandler();
         }
       } catch (err) {
-        this.showNotification(`${err}`);
+        this.showErrorSnack(err, false);
         return;
       }
     }

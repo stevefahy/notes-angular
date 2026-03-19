@@ -1,63 +1,191 @@
+.page-heading {
+  font-family: var(--theme-font-serif);
+  font-size: 18px;
+  color: var(--theme-text-muted);
+  margin-top: 16px;
+  margin-left: 16px;
+  margin-right: 16px;
+  margin-bottom: 0;
+}
+
+.notebooks-list-wrap {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .notebooks-list-wrap {
+    max-width: 100%;
+  }
+  .page-heading {
+    font-size: 16px;
+  }
+}
+
+.notes-list-container {
+  background: var(--theme-bg);
+  min-height: 100%;
+  padding-bottom: 8px;
+}
+
 .notes_list {
   list-style: none;
-  margin-block-start: 0em;
-  padding-inline-start: 0px;
-  padding-left: 10px;
-  padding-right: 10px;
+  margin: 0;
+  padding: 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.notes_list li {
-  padding-top: 10px;
-}
-
-.notebook_list_bg {
+.note-card-outer {
   position: relative;
 }
 
-.thumb_select {
+.note-card-link-overlay {
   position: absolute;
-  right: 10px;
-  top: 15px;
-  z-index: 1000;
-}
-
-.thumb_select_outer {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-}
-
-.note_list_card:hover {
-  background-color: #f7f7f7;
-}
-
-.thumb_image {
-  min-height: calc(var(--viewnotethumb-box-min-height) * 1px);
-  min-height: 45px;
-  max-height: 300px;
-  overflow-y: hidden;
-  width: 100%;
-  padding: 0;
-  margin: 0;
-}
-
-.thumb_outer_link {
+  inset: 0;
+  z-index: 1;
   cursor: pointer;
-  width: 100%;
 }
 
-.thumb_outer {
+.note-card-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.note-card {
+  background: var(--theme-surface);
+  border-radius: 14px;
+  padding: 14px 14px 12px;
+  border: 1px solid var(--theme-border);
+  box-shadow: var(--theme-shadow-sm);
   display: flex;
-  width: 100%;
-  flex-direction: row;
-  align-items: flex-start;
-  min-height: 81px;
+  gap: 10px;
 }
 
-.thumb_outer a {
-  width: 100%;
+.note-card-outer:has(> .note-card-link-overlay:hover) .note-card {
+  box-shadow: var(--theme-shadow-mid);
+  background-color: var(--theme-ghost-hover);
 }
 
-.thumb_outer .edit_link {
-  width: 100%;
+.note-card--selected {
+  border-color: var(--theme-green);
+  box-shadow: 0 0 0 2px var(--theme-lime-light);
+}
+
+.note-select-col-wrapper {
+  overflow: hidden;
+  flex-shrink: 0;
+  width: 0;
+  transition: width 0.25s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.note-select-col-wrapper.is-visible {
+  width: 20px;
+}
+
+.note-select-col {
+  flex-shrink: 0;
+  margin-top: 1px;
+  width: 20px;
+  padding-top: 12px;
+}
+
+.sel-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid #c0dcc8;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sel-circle--active {
+  background: var(--theme-green);
+  border-color: var(--theme-green);
+}
+
+.note-card-body {
+  flex: 1;
+  min-width: 0;
+  padding: 12px;
+}
+
+.note-title {
+  font-family: var(--theme-font-lato);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--theme-text-muted);
+  margin-bottom: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+}
+
+.note-thumb-preview {
+  max-height: 80px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.note-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.note-date {
+  font-size: 11px;
+  color: var(--theme-text-muted);
+}
+
+.note-tag {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 99px;
+}
+
+.tag-todo {
+  background: var(--theme-lime-bg);
+  color: var(--theme-green-accent);
+}
+
+.tag-table {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.tag-code {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.tag-image {
+  background: #fdf4ff;
+  color: #7e22ce;
+}
+
+.tag-list {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.tag-text {
+  background: #f8fafc;
+  color: #94a3b8;
+}
+
+.tag-empty {
+  background: #fafafa;
+  color: #d1d5db;
 }

@@ -1,7 +1,12 @@
 @if (pageLayout() !== 'other') {
   <div>
     <div>
-      <div role="presentation" [ngClass]="'breadcrumb_container'">
+      <div
+        role="presentation"
+        class="breadcrumb_container"
+        [class.breadcrumb--notebooks]="pageLayout() === 'notebooks'"
+        [class.breadcrumb--section]="pageLayout() === 'notebooks' || pageLayout() === 'profile'"
+      >
         <div ngClass="breadcrumbs_inner">
           <!-- PROFILE -->
           @if (notebookLoaded() && pageLayout() === 'profile') {
@@ -13,9 +18,8 @@
             <div>
               <span [ngClass]="'breadcrumb_link'">
                 <span [ngClass]="'breadcrumb_link_icon'">
-                  <span [ngClass]="'breadcrumb_seperator'">/</span>
+                  <span [ngClass]="'breadcrumb_seperator'">›</span>
                 </span>
-                <mat-icon ngClass="breadcrumb_icon">account_circle</mat-icon>
                 Profile
               </span>
             </div>
@@ -38,26 +42,13 @@
             notebook() &&
             notebook().name
             ) {
-            <div
-              >
-              <a routerLink="notebook/{{ notebook().id }}">
-                <span [ngClass]="'breadcrumb_link'">
-                  <span [ngClass]="'breadcrumb_link_icon'">
-                    <span [ngClass]="'breadcrumb_seperator'">/</span>
-                  </span>
-                  <span
-                    class="material-icons-outlined"
-                ngClass="icon_notebook breadcrumb_icon notebook_cover_{{
-                  notebook().cover
-                }} "
-                    >
-                    description
-                  </span>
-                  <span [ngClass]="'breadcrumb_link_btn'">
-                    {{ notebook().name }}
-                  </span>
+            <div>
+              <span class="breadcrumb_link">
+                <span class="breadcrumb_link_icon">
+                  <span class="breadcrumb_seperator">›</span>
                 </span>
-              </a>
+                <span class="breadcrumb_link">{{ notebook().name }}</span>
+              </span>
             </div>
           }
           <!-- NOTEEBOOKS / NOTEBOOK / NOTE  -->
@@ -69,39 +60,20 @@
           @if (notebookLoaded() && notebook().name && pageLayout() === 'note') {
             <div
               >
-              <a routerLink="notebook/{{ notebook().id }}">
-                <span [ngClass]="'breadcrumb_link'">
-                  <span [ngClass]="'breadcrumb_link_icon'">
-                    <span [ngClass]="'breadcrumb_seperator'">/</span>
-                  </span>
-                  <span
-                    class="material-icons-outlined"
-                ngClass="icon_notebook breadcrumb_icon notebook_cover_{{
-                  notebook().cover
-                }} "
-                    >
-                    description
-                  </span>
-                  <span [ngClass]="'breadcrumb_link_btn'">
-                    {{ notebook().name }}
-                  </span>
+              <a [routerLink]="['/notebook', notebook().id]" [ngClass]="'breadcrumb_link'">
+                <span [ngClass]="'breadcrumb_link_icon'">
+                  <span [ngClass]="'breadcrumb_seperator'">›</span>
                 </span>
+                <span [ngClass]="'breadcrumb_link_btn'">{{ notebook().name }}</span>
               </a>
             </div>
           }
           <!-- NOTE  -->
           @if (notebookLoaded() && notebook().name && pageLayout() === 'note') {
-            <div
-              >
+            <div>
               <span [ngClass]="'breadcrumb_link'">
                 <span [ngClass]="'breadcrumb_link_icon'">
-                  <span [ngClass]="'breadcrumb_seperator'">/</span>
-                </span>
-                <span
-                  class="material-icons-outlined"
-                  ngClass="note icon_note breadcrumb_icon "
-                  >
-                  note
+                  <span [ngClass]="'breadcrumb_seperator'">›</span>
                 </span>
                 Note
               </span>
@@ -112,12 +84,12 @@
             <div>
               <div [ngClass]="'breadcrumb_edit_btn'">
                 <button
-                  mat-mini-fab
-                  aria-label="Edit notebook button"
-                  ngClass="breadcrumb_edit_fab"
+                  type="button"
+                  aria-label="Edit notebook"
+                  class="breadcrumb_edit_fab material-icons edit_icon edit_icon_small"
                   (click)="editNotebook()"
-                  >
-                  <span ngClass="material-symbols-outlined edit_icon"> edit </span>
+                >
+                  edit
                 </button>
               </div>
             </div>

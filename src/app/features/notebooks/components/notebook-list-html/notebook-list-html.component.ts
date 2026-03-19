@@ -1,17 +1,19 @@
-import { Component, Input, signal } from '@angular/core';
+import { Component, Input, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { Notebook } from 'src/app/core/model/global';
 import DateFormat from '../../../../core/lib/date-format';
+import {
+  mapLegacyCover,
+  type NotebookCoverType,
+} from '../../../../core/lib/folder-options';
 
 @Component({
-    selector: 'NotebookListHtml',
-    standalone: true,
-    imports: [CommonModule, RouterModule, MatCardModule, NgxSkeletonLoaderModule],
-    templateUrl: './notebook-list-html.component.html',
-    styleUrls: ['../../styles_shared/notebook-list-shared-css.scss'],
+  selector: 'NotebookListHtml',
+  standalone: true,
+  imports: [CommonModule, NgxSkeletonLoaderModule],
+  templateUrl: './notebook-list-html.component.html',
+  styleUrls: ['../../styles_shared/notebook-list-shared-css.scss'],
 })
 export class NotebookListHtmlComponent {
   @Input()
@@ -24,9 +26,15 @@ export class NotebookListHtmlComponent {
       this.notebook_item$.set(val);
     }
   }
+  @Input() noteCount?: number;
 
   notebook_item$ = signal<Notebook | null>(null);
   notebookLoaded$ = signal<boolean>(false);
+
+  displayCover = computed((): NotebookCoverType => {
+    const item = this.notebook_item$();
+    return item ? mapLegacyCover(item.notebook_cover) : 'sage';
+  });
 
   dateFormat = DateFormat;
 }

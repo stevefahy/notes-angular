@@ -1,8 +1,25 @@
-<span class="snack_outer">
-  <mat-icon
-    ><span class="material-symbols-outlined snack_icon">
-      {{ data?.icon }}
-    </span></mat-icon
-  >
-  <span>{{ data?.message }}</span>
-</span>
+<div
+  class="snackbar"
+  [class.show]="visible()"
+  [class.snackbar-error]="variant() === 'error'"
+  [class.snackbar-warning]="variant() === 'warning'"
+>
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <circle
+      cx="8"
+      cy="8"
+      r="7.5"
+      fill="rgba(255,255,255,0.2)"
+      stroke="rgba(255,255,255,0.5)"
+      stroke-width="1"
+    />
+    <path
+      d="M4.5 8l2.5 2.5 4.5-4.5"
+      stroke="white"
+      stroke-width="1.6"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+  <span id="snackbar-msg">{{ message() }}</span>
+</div>

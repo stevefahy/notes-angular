@@ -1,51 +1,51 @@
-<li ngClass="notebooks_list_bg">
-  <mat-card>
-    <mat-card-content ngClass="cardcontent">
-      <div ngClass="notebooks_list_outer">
-        <div
-          ngClass="notebooks_list_left {{
-            !notebookLoaded$() ? '' : 'tab_' + notebook_item$()!.notebook_cover
-          }}"
-          >
-          @if (!notebookLoaded$()) {
-            <div>
-              <ngx-skeleton-loader
-                count="1"
-                appearance="line"
-                [theme]="{ height: '50px' }"
-              ></ngx-skeleton-loader>
-            </div>
-          }
-        </div>
-        <div ngClass="notebooks_list_right">
-          @if (!notebookLoaded$()) {
-            <div>
-              <ngx-skeleton-loader
-                count="1"
-                appearance="line"
-              [theme]="{
-                height: '20px',
-                'margin-bottom': '0px',
-                'margin-top': '20px'
-              }"
-              ></ngx-skeleton-loader>
-              <ngx-skeleton-loader
-                count="1"
-                appearance="line"
-                [theme]="{ height: '10px' }"
-              ></ngx-skeleton-loader>
-            </div>
-          }
-          @if (notebookLoaded$()) {
-            <div>{{ notebook_item$()!.notebook_name }}</div>
-            <div ngClass="date_format">
-              <div>
-                {{ dateFormat(notebook_item$()!.updatedAt!) }}
-              </div>
-            </div>
-          }
-        </div>
+<div class="notebooks_list_bg">
+  <div class="vcard">
+    <div class="cardcontent"></div>
+    <div class="notebooks_list_outer">
+      <div
+        class="notebooks_list_left {{
+          !notebookLoaded$() ? 'tab_loading' : 'tab_' + displayCover()
+        }}"
+      >
+        @if (!notebookLoaded$()) {
+          <div class="nb-spine-loading"></div>
+        }
+        @if (notebookLoaded$()) {
+          <div class="nb-spine-{{ displayCover() }}"></div>
+        }
       </div>
-    </mat-card-content>
-  </mat-card>
-</li>
+      <div class="notebooks_list_right">
+        @if (!notebookLoaded$()) {
+          <ngx-skeleton-loader
+            count="1"
+            appearance="line"
+            [theme]="{
+              height: '20px',
+              'margin-bottom': '0px',
+              'margin-top': '20px',
+            }"
+          ></ngx-skeleton-loader>
+          <ngx-skeleton-loader
+            count="1"
+            appearance="line"
+            [theme]="{ height: '10px' }"
+          ></ngx-skeleton-loader>
+        }
+        @if (notebookLoaded$()) {
+          <div>{{ notebook_item$()!.notebook_name }}</div>
+          <div class="date_format">
+            {{ dateFormat(notebook_item$()!.updatedAt!) }}
+          </div>
+        }
+      </div>
+      @if (notebookLoaded$() && noteCount !== undefined) {
+        <span class="nb-count"
+          >{{ noteCount }} {{ noteCount === 1 ? "note" : "notes" }}</span
+        >
+      }
+      @if (notebookLoaded$()) {
+        <div class="notebooks_list_arrow">›</div>
+      }
+    </div>
+  </div>
+</div>

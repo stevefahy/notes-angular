@@ -1,89 +1,178 @@
-<div ngClass="change_buttons">
-  <button
-    mat-button
-    color="secondary"
-    aria-label="User Name button"
-    ngClass="contained medium"
-    (click)="toggleUserName()"
-    >
-    User Name
-  </button>
-  <button
-    mat-button
-    color="secondary"
-    aria-label="Password button"
-    ngClass="contained medium"
-    (click)="togglePassword()"
-    >
-    Password
-  </button>
+<div class="pf-outer">
+  <div class="tab-container">
+    <div class="tabs">
+      <button
+        class="tab"
+        [class.active]="activeTab() === 'user'"
+        type="button"
+        (click)="setActiveTab('user')"
+      >
+        <svg
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </svg>
+        Username
+      </button>
+      <button
+        class="tab"
+        [class.active]="activeTab() === 'pass'"
+        type="button"
+        (click)="setActiveTab('pass')"
+      >
+        <svg
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </svg>
+        Password
+      </button>
+    </div>
+
+    <div class="tab-panel">
+      @if (activeTab() === "user") {
+        <div class="tab-content">
+          <form (ngSubmit)="submitHandlerUsername($event)">
+            <div class="form-field">
+              <label class="form-label" for="newUsername">New Username</label>
+              <input
+                class="form-input"
+                [class.input-error]="
+                  !!usernameError() || !!usernameServerError()
+                "
+                type="text"
+                id="newUsername"
+                [ngModel]="newUsername()"
+                (ngModelChange)="newUsername.set($event)"
+                name="newUsername"
+                (input)="usernameServerError.set('')"
+                placeholder="Enter new username"
+              />
+            </div>
+            <div class="field-feedback">
+              <div
+                class="inline-error"
+                [class.visible]="!!(usernameServerError() || usernameError())"
+              >
+                <span>{{ usernameServerError() || usernameError() }}</span>
+              </div>
+              <span
+                class="char-counter"
+                [class.over]="newUsername().length > AC.USERNAME_MAX"
+              >
+                {{ newUsername().length }} / {{ AC.USERNAME_MAX }}
+              </span>
+            </div>
+            <div class="btn-wrap">
+              @if (!usernameValid() && !tooltipSuppressed()) {
+                <div class="btn-tooltip">{{ usernameTooltip() }}</div>
+              }
+              <button
+                type="submit"
+                class="btn-save"
+                [disabled]="!usernameValid() || isSubmitting()"
+              >
+                Save
+              </button>
+            </div>
+          </form>
+        </div>
+      }
+
+      @if (activeTab() === "pass") {
+        <div class="tab-content">
+          <form (ngSubmit)="submitHandlerPassword($event)">
+            <div class="form-field">
+              <label class="form-label" for="oldPassword"
+                >Current Password</label
+              >
+              <input
+                class="form-input"
+                [class.input-error]="!!passwordServerError()"
+                type="password"
+                id="oldPassword"
+                [ngModel]="oldPassword()"
+                (ngModelChange)="oldPassword.set($event)"
+                name="oldPassword"
+                (input)="passwordServerError.set('')"
+                placeholder="Current password"
+              />
+            </div>
+            <div class="field-feedback">
+              <div
+                class="inline-error"
+                [class.visible]="!!passwordServerError()"
+              >
+                <span>{{ passwordServerError() }}</span>
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="newPassword">New Password</label>
+              <input
+                class="form-input"
+                [class.input-error]="!!passwordError()"
+                type="password"
+                id="newPassword"
+                [ngModel]="newPassword()"
+                (ngModelChange)="newPassword.set($event)"
+                name="newPassword"
+                placeholder="Min. {{ AC.PASSWORD_MIN }} characters"
+              />
+            </div>
+            <div class="strength-row">
+              @for (i of [1, 2, 3, 4]; track i) {
+                <div
+                  class="bar-seg"
+                  [class.weak]="
+                    i <= strengthScore() && strengthClass() === 'weak'
+                  "
+                  [class.ok]="i <= strengthScore() && strengthClass() === 'ok'"
+                  [class.good]="
+                    i <= strengthScore() && strengthClass() === 'good'
+                  "
+                ></div>
+              }
+            </div>
+            <div class="field-feedback">
+              <div class="inline-error" [class.visible]="!!passwordError()">
+                <span>{{ passwordError() }}</span>
+              </div>
+            </div>
+            <div class="btn-wrap">
+              @if (!passwordValid() && !tooltipSuppressed()) {
+                <div class="btn-tooltip">{{ passwordTooltip() }}</div>
+              }
+              <button
+                type="submit"
+                class="btn-save"
+                [disabled]="!passwordValid() || isSubmitting()"
+              >
+                Update
+              </button>
+            </div>
+          </form>
+        </div>
+      }
+    </div>
+  </div>
 </div>
-
-@if (passwordToggle()) {
-  <div ngClass="form_container">
-    <form ngClass="form" (ngSubmit)="submitHandlerPassword($event)">
-      <div ngClass="control">
-        <label htmlFor="new-password">New Password</label>
-        <input
-          autoComplete="New Password"
-          type="password"
-          id="new-password"
-          #newPasswordRef
-          (change)="handleChangePassword($event)"
-          />
-      </div>
-      <div ngClass="control">
-        <label htmlFor="old-password">Old Password</label>
-        <input
-          autoComplete="New User Name"
-          type="password"
-          id="old-password"
-          #oldPasswordRef
-          (change)="handleChangePassword($event)"
-          />
-      </div>
-      <div ngClass="action">
-        <button
-          mat-button
-          color="secondary"
-          aria-label="Change Password button"
-          ngClass="contained medium"
-          disabled="{{ !formIsValid() }}"
-          >
-          Change Password
-        </button>
-      </div>
-    </form>
-  </div>
-}
-
-@if (userNameToggle()) {
-  <div ngClass="form_container">
-    <form ngClass="form" (ngSubmit)="submitHandlerUsername($event)">
-      <div ngClass="control">
-        <label htmlFor="new-username">User Name</label>
-        <input
-          [defaultValue]="username()"
-          type="text"
-          id="new-password"
-          #newUsernameRef
-          (input)="handleChangeUsername($event)"
-          />
-      </div>
-      <div ngClass="action">
-        <button
-          mat-button
-          color="secondary"
-          aria-label="Change User Name button"
-          ngClass="contained medium"
-          disabled="{{ !formIsValid() }}"
-          >
-          Change User Name
-        </button>
-      </div>
-    </form>
-  </div>
-}
 
 @if (error().error_state) {
   <ng-container #errorcontainer></ng-container>

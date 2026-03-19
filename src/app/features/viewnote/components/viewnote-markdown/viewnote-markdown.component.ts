@@ -7,10 +7,10 @@ import fm from 'front-matter';
 import emoji_defs from 'src/app/core/lib/emoji_definitions';
 import { stringifyFrontMatter } from 'src/app/core/lib/front-matter-helper';
 import markdownItAnchor from 'markdown-it-anchor';
-import hljs from 'highlight.js/lib/core';
-import hjls_js from 'highlight.js/lib/languages/javascript';
-import hjls_css from 'highlight.js/lib/languages/css';
-import hjls_markdown from 'highlight.js/lib/languages/markdown';
+import Prism from 'prismjs';
+import 'prismjs/components/prism-javascript';
+import 'prismjs/components/prism-css';
+import 'prismjs/components/prism-markdown';
 
 import MarkdownIt from 'markdown-it';
 import markdownItEmoji from 'markdown-it-emoji';
@@ -24,11 +24,8 @@ import markdownItAttrs from 'markdown-it-attrs';
 import markdownItTaskCheckbox from 'markdown-it-task-checkbox';
 import markdownItContainer from 'markdown-it-container';
 
-// HIGHLIGHTJS
-hljs.registerLanguage('javascript', hjls_js);
-hljs.registerLanguage('css', hjls_css);
-hljs.registerLanguage('markdown', hjls_markdown);
-hljs.registerLanguage('md', hjls_markdown);
+// Map "md" to markdown language for Prism
+const langAliases: Record<string, string> = { md: 'markdown' };
 
 // MARKDOWN-IT
 
@@ -40,22 +37,22 @@ md = new MarkdownIt({
   langPrefix: 'language-',
   breaks: false,
   highlight: function (str: string, lang: string) {
-    if (lang && hljs.getLanguage(lang)) {
-      try {
-        return (
-          '<pre class="hljs"><code>' +
-          hljs.highlight(str, { language: lang, ignoreIllegals: false }).value +
-          '</code></pre><p>' +
-          lang +
-          '</p>'
-        );
-      } catch (__) {}
+    const prismLang = lang ? (langAliases[lang] ?? lang) : undefined;
+    if (prismLang && prismLang in Prism.languages) {
+      const gram = Prism.languages[prismLang as keyof typeof Prism.languages];
+      const highlighted = Prism.highlight(str, gram, prismLang);
+      return (
+        `<pre class="language-${prismLang}"><code class="language-${prismLang}">${highlighted}</code></pre>` +
+        '<p>' +
+        md.utils.escapeHtml(lang ?? '') +
+        '</p>'
+      );
     }
     return (
-      '<pre class="hljs"><code>' +
+      '<pre><code>' +
       md.utils.escapeHtml(str) +
       '</code></pre><p>' +
-      (lang || '') +
+      (lang ? md.utils.escapeHtml(lang) : '') +
       '</p>'
     );
   },
@@ -97,7 +94,7 @@ md.use(markdownItAttrs, {
 md.use(markdownItTaskCheckbox, {
   disabled: false,
   divWrap: true,
-  divClass: 'checkbox',
+  divClass: 'custom-checkbox',
   idPrefix: 'cbx_',
   ulClass: 'task-list',
   liClass: 'task-list-item',
@@ -378,27 +375,36 @@ export class ViewnoteMarkdownComponent
     }
 
     const target = event.target as HTMLElement;
-    
-    // Check if target is a checkbox input
-    if (target.tagName !== 'INPUT' || (target as HTMLInputElement).type !== 'checkbox') {
+    let checkbox: HTMLInputElement | null = null;
+    let checked: boolean | undefined;
+
+    if (
+      target.tagName === 'INPUT' &&
+      (target as HTMLInputElement).type === 'checkbox'
+    ) {
+      checkbox = target as HTMLInputElement;
+      checked = checkbox.checked;
+    } else if (target.tagName === 'LABEL' && target.getAttribute('for')) {
+      const input = document.getElementById(target.getAttribute('for')!);
+      if (
+        input?.tagName === 'INPUT' &&
+        (input as HTMLInputElement).type === 'checkbox'
+      ) {
+        checkbox = input as HTMLInputElement;
+        // Label click toggles the checkbox; use the new state
+        checked = !checkbox.checked;
+      }
+    }
+
+    if (!checkbox?.id?.startsWith('cbx_') || checked === undefined) {
       return;
     }
 
-    const checkbox = target as HTMLInputElement;
-    const id = checkbox.id;
-
-    // Verify it's a task checkbox
-    if (!id || !id.startsWith('cbx_')) {
-      return;
-    }
-
-    // Parse task index from checkbox ID (cbx_3 -> index 3)
-    const taskIndex = parseInt(id.slice(4), 10); // 4 = length of 'cbx_'
+    const taskIndex = parseInt(checkbox.id.slice(4), 10); // 4 = length of 'cbx_'
     if (isNaN(taskIndex) || taskIndex < 0) {
       return;
     }
 
-    const checked = checkbox.checked;
     this.updateCheckboxInMarkdown(taskIndex, checked);
   }
 
@@ -422,12 +428,12 @@ export class ViewnoteMarkdownComponent
           // Replace checkbox state in the line
           lines[i] = lines[i].replace(
             /\[\s*(x|\s)\s*\]/i,
-            checked ? '[x]' : '[ ]'
+            checked ? '[x]' : '[ ]',
           );
-          
+
           // Reconstruct content with updated line
           const updatedContent = lines.join('\n');
-          
+
           // Preserve frontmatter if it exists
           const attrs = parsed.attributes as Record<string, unknown>;
           const updatedFull =

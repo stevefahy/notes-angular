@@ -1,87 +1,82 @@
-<div ngClass="dialogue_container">
-  <h2 mat-dialog-title ngClass="dialogue-title">
-    {{ method === "edit" ? "Edit Notebook" : "Add Notebook" }}
-  </h2>
-  <div mat-dialog-content>
-    <form ngClass="form">
-      <div ngClass="control">
-        <label htmlFor="new-notebook">Name</label>
+<div class="bottom-sheet-wrapper" (click)="$event.stopPropagation()">
+  <div class="bottom-sheet" aria-labelledby="add-notebook-title">
+    <div class="sheet-handle"></div>
+
+    <h2 id="add-notebook-title" class="sheet-title">
+      {{ method === "edit" ? "Edit Notebook" : "New Notebook" }}
+    </h2>
+
+    <form (ngSubmit)="submitHandler($event)">
+      <div class="sheet-field">
+        <label class="form-label" for="new-notebook">Name</label>
         <input
+          #nameInput
+          class="form-input"
           type="text"
           id="new-notebook"
-          [defaultValue]="notebookName"
-          (input)="nameChangeHandler(getValue($event))"
-          />
+          name="notebookName"
+          placeholder="e.g. Personal, Work…"
+          [(ngModel)]="currentName"
+          (ngModelChange)="nameChangeHandler()"
+          [attr.aria-busy]="isSubmitting() ? 'true' : null"
+          [disabled]="isSubmitting()"
+        />
       </div>
-      <div ngClass="control">
-        <label htmlFor="new-notebook-cover">Cover</label>
-        <select
-          name="cars"
-          ngClass="select_dialogue"
-          id="new-notebook-cover"
-          (change)="coverChangeHandler(getValueAsNotebookCoverType($event))"
-          >
-          @for (folder of folderOptions; track trackfolderOptions($index, folder)) {
-            <option
-              [value]="folder.value"
-              [selected]="folder.value === notebookCover"
-              >
-              {{ folder.viewValue }}
-            </option>
+
+      <fieldset class="sheet-field sheet-fieldset">
+        <legend class="form-label">Cover colour</legend>
+        <div class="swatch-row">
+          @for (
+            folder of folderOptions;
+            track trackfolderOptions($index, folder)
+          ) {
+            <button
+              type="button"
+              class="swatch swatch-{{ folder.value }}"
+              [class.selected]="selectedCover() === folder.value"
+              [disabled]="isSubmitting()"
+              [attr.aria-label]="folder.viewValue + ' cover'"
+              [attr.aria-pressed]="selectedCover() === folder.value"
+              (click)="coverChangeHandler(folder.value)"
+            ></button>
           }
-        </select>
-      </div>
+        </div>
+      </fieldset>
     </form>
-    <div ngClass="button_row">
-      <div ngClass="checkForm() ? action_disabled : action">
-        @if (method === 'create') {
-          <div>
-            <button
-              mat-button
-              color="secondary"
-              aria-label="Add notebook button"
-              ngClass="contained medium"
-              disabled="{{ checkForm() }}"
-              (click)="submitHandler($event)"
-              >
-              Add
-            </button>
-          </div>
-        }
-        @if (method === 'edit') {
-          <div>
-            <button
-              mat-button
-              color="secondary"
-              aria-label="Edit notebook button"
-              ngClass="contained medium"
-              disabled="{{ checkForm() }}"
-              (click)="submitHandler($event)"
-              >
-              <span ngClass="icon_text"> Confirm </span>
-            </button>
-          </div>
-        }
-      </div>
-      <div>
-        <button
-          mat-button
-          color="secondary"
-          aria-label="Edit notebook button"
-          ngClass="contained medium"
-          (click)="cancelHandler($event)"
-          >
-          <span ngClass="icon_text">
-            <span ngClass="material-symbols-outlined button_icon white">
-              cancel
-            </span>
-            Cancel
-          </span>
-        </button>
-      </div>
-    </div>
+
     @if (error().error_state) {
-      <ng-container #errorcontainer></ng-container>
+      <div class="sheet-field">
+        <ErrorAlert
+          [error_state]="error().error_state ?? false"
+          [message]="error().message ?? ''"
+        />
+      </div>
     }
+
+    <div class="sheet-actions">
+      <button
+        type="button"
+        class="btn-cancel"
+        (click)="cancelHandler($event)"
+        aria-label="Cancel button"
+      >
+        Cancel
+      </button>
+      <button
+        type="button"
+        class="btn-create"
+        [disabled]="isCreateButtonDisabled() || isSubmitting()"
+        (click)="submitHandler($event)"
+        [attr.aria-label]="
+          method === 'edit' ? 'Confirm edit button' : 'Create notebook button'
+        "
+      >
+        @if (isSubmitting()) {
+          {{ method === "edit" ? "Saving…" : "Creating…" }}
+        } @else {
+          {{ method === "edit" ? "Confirm" : "Create" }}
+        }
+      </button>
+    </div>
   </div>
 </div>

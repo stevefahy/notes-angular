@@ -5,9 +5,7 @@
  */
 
 code[class*="language-"],
-pre[class*="language-"],
-pre.hljs,
-pre.hljs code {
+pre[class*="language-"] {
   color: #c5c8c6;
   text-shadow: 0 1px rgba(0, 0, 0, 0.3);
   font-family: Inconsolata, Monaco, Consolas, "Courier New", Courier, monospace;
@@ -32,8 +30,7 @@ pre.hljs code {
 }
 
 /* Code blocks */
-pre[class*="language-"],
-pre.hljs {
+pre[class*="language-"] {
   padding: 1em;
   margin: 0.5em 0;
   overflow: auto;
@@ -41,8 +38,7 @@ pre.hljs {
 }
 
 :not(pre) > code[class*="language-"],
-pre[class*="language-"],
-pre.hljs {
+pre[class*="language-"] {
   background: #1d1f21;
 }
 
@@ -52,14 +48,14 @@ pre.hljs {
   border-radius: 0.3em;
 }
 
-.hljs-comment,
-.hljs-prolog,
-.hljs-doctype,
-.hljs-cdata {
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
   color: #7c7c7c;
 }
 
-.hljs-punctuation {
+.token.punctuation {
   color: #c5c8c6;
 }
 
@@ -67,84 +63,84 @@ pre.hljs {
   opacity: 0.7;
 }
 
-.hljs-property,
-.hljs-keyword,
-.hljs-tag {
+.token.property,
+.token.keyword,
+.token.tag {
   color: #96cbfe;
 }
 
-.hljs-class-name {
+.token.class-name {
   color: #ffffb6;
   text-decoration: underline;
 }
 
-.hljs-boolean,
-.hljs-constant {
+.token.boolean,
+.token.constant {
   color: #99cc99;
 }
 
-.hljs-symbol,
-.hljs-deleted {
+.token.symbol,
+.token.deleted {
   color: #f92672;
 }
 
-.hljs-number {
+.token.number {
   color: #ff73fd;
 }
 
-.hljs-selector,
-.hljs-attr-name,
-.hljs-string,
-.hljs-char,
-.hljs-builtin,
-.hljs-inserted {
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
   color: #a8ff60;
 }
 
-.hljs-variable {
+.token.variable {
   color: #c6c5fe;
 }
 
-.hljs-operator {
+.token.operator {
   color: #ededed;
 }
 
-.hljs-entity {
+.token.entity {
   color: #ffffb6;
   cursor: help;
 }
 
-.hljs-url {
+.token.url {
   color: #96cbfe;
 }
 
-.language-javascript .hljs-string,
-.style .hljs-string {
+.language-javascript .token.string,
+.language-css .token.string {
   color: #87c38a;
 }
 
-.hljs-atrule,
-.hljs-attr-value {
+.token.atrule,
+.token.attr-value {
   color: #f9ee98;
 }
 
-.hljs-function {
+.token.function {
   color: #dad085;
 }
 
-.hljs-regex {
+.token.regex {
   color: #e9c062;
 }
 
-.hljs-important {
+.token.important {
   color: #fd971f;
 }
 
-.hljs-important,
-.hljs-bold {
+.token.important,
+.token.bold {
   font-weight: bold;
 }
 
-.hljs-italic {
+.token.italic {
   font-style: italic;
 }

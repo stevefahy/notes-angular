@@ -1,8 +1,16 @@
 @if (!notebookLoaded()) {
-<NotebookListHtml [notebook_item]="null" [notebookLoaded]="false" />
+  <li>
+    <NotebookListHtml [notebook_item]="null" [notebookLoaded]="false" />
+  </li>
 }
 @if (notebookLoaded()) {
-<a routerLink="/notebook/{{ notebook_item._id }}">
-  <NotebookListHtml [notebook_item]="notebook_item" [notebookLoaded]="notebookLoaded()" />
-</a>
+  <li>
+    <a routerLink="/notebook/{{ notebook_item._id }}" class="notebook-link">
+      <NotebookListHtml
+        [notebook_item]="notebook_item"
+        [notebookLoaded]="notebookLoaded()"
+        [noteCount]="notebook_item.noteCount"
+      />
+    </a>
+  </li>
 }

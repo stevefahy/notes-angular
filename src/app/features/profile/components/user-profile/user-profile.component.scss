@@ -1,8 +1,50 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
 .profile {
-  margin: 3rem auto;
-  text-align: center;
+  position: relative;
   display: flex;
-  overflow-y: visible;
   flex-direction: column;
   align-items: center;
+  text-align: center;
+  width: 100%;
+  height: calc(
+    var(--jsvh) - (var(--header-height) + var(--breadcrumb-height)) * 1px
+  );
+  overflow-y: auto;
+}
+
+.profile_outer {
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3d9966, #2e7d52);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--theme-font-serif);
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  margin-top: 48px;
+  margin-bottom: 20px;
+  box-shadow: var(--theme-shadow-lg);
+}
+
+.profile_name {
+  font-family: var(--theme-font-serif);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--theme-text);
+  margin-bottom: 3px;
+}
+
+.profile_email {
+  font-family: var(--theme-font-lato);
+  font-size: 13.5px;
+  color: var(--theme-text-muted);
+  margin-bottom: 20px;
 }

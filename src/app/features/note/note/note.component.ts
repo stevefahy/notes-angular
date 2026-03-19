@@ -11,16 +11,23 @@ import {
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { ActivatedRoute, NavigationStart, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../core/services/auth.service';
 import { IAuthContext, WindowDimensions } from '../../../core/model/global';
-import { NotificationActions } from '../../../store/actions/notification.actions';
+import { SnackService } from '../../../core/services/snack.service';
 import { NotebookEditActions } from '../../../store/actions/notebook_edit.actions';
-import { SnackActions } from '../../../store/actions/snack.actions';
 import { Store } from '@ngrx/store';
 import useWindowDimensions from '../../../core/lib/useWindowDimension';
-import { Observable, Subject, takeUntil } from 'rxjs';
+import {
+  Observable,
+  Subject,
+  combineLatest,
+  distinctUntilChanged,
+  filter,
+  map,
+  takeUntil,
+} from 'rxjs';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { getNote } from '../../../core/helpers/getNote';
 import { getNotebook } from '../../../core/helpers/getNotebook';
@@ -31,7 +38,6 @@ import {
   removeScrollListeners,
 } from '../../../core/lib/scroll_sync';
 import APPLICATION_CONSTANTS from '../../../core/application-constants/application-constants';
-import { AuthGuardService } from '../../../core/services/auth-guard.service';
 import { LoadingScreenComponent } from '../../../core/components/ui/loading-screen/loading-screen.component';
 import { FooterComponent } from '../../../core/components/footer/footer.component';
 import { ViewnoteComponent } from '../../viewnote/components/viewnote/viewnote.component';
@@ -44,6 +50,7 @@ const AC = APPLICATION_CONSTANTS;
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
     MatButtonModule,
     MatIconModule,
     LoadingScreenComponent,
@@ -61,9 +68,8 @@ export class NoteComponent implements OnInit, OnDestroy {
   private store = inject(Store);
   private http = inject(HttpClient);
   private router = inject(Router);
-  private authGuard = inject(AuthGuardService);
+  private snack = inject(SnackService);
 
-  navigationUrl: string;
   notebookId: string;
   noteId: string;
   loading: boolean | null;
@@ -84,16 +90,11 @@ export class NoteComponent implements OnInit, OnDestroy {
   updateEditTextProp = signal<string>('');
   noteLoaded = signal<boolean>(false);
   notebookLoaded = signal<boolean>(false);
-  autoSave = signal<boolean>(false);
-  autoSave$ = toObservable(this.autoSave);
+  loadError = signal<string | null>(null);
   isChanged = signal<boolean>(false);
-  isChanged$ = toObservable(this.isChanged);
   isCreate = signal<boolean>(this.new_note);
-  isCreate$ = toObservable(this.isCreate);
-  isView = signal<boolean>(this.new_note);
-  isView$ = toObservable(this.isView);
+  isView = signal<boolean>(true);
   isSplitScreen = signal<boolean>(false);
-  isSplitScreen$ = toObservable(this.isSplitScreen);
   unsavedChanges = signal<boolean>(true);
 
   private injector = inject(INJECTOR);
@@ -110,17 +111,6 @@ export class NoteComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Subscribe to router events with proper cleanup
-    this.router.events.pipe(takeUntil(this.onDestroy$)).subscribe((event) => {
-      if (event instanceof NavigationStart) {
-        this.navigationUrl = event.url;
-        if (this.isChanged() && !this.isCreate()) {
-          this.authGuard.deactivate = false;
-          this.autoSave.update((prev) => true);
-        }
-      }
-    });
-    // Effects
     runInInjectionContext(this.injector, () => {
       this.windowDimensions$ = toObservable(useWindowDimensions());
       this.windowDimensions$
@@ -132,21 +122,7 @@ export class NoteComponent implements OnInit, OnDestroy {
           this.removeListener = dims.removeListener;
           this.dimensionsChange();
         });
-
-      this.autoSave$.pipe(takeUntil(this.onDestroy$)).subscribe((res) => {
-        if (res) {
-          this.saveNoteCheck();
-          this.showSnack();
-        }
-      });
     });
-
-    this.activatedRoute.params
-      .pipe(takeUntil(this.onDestroy$))
-      .subscribe((data: any) => {
-        this.noteId = data.noteId;
-        this.notebookId = data.notebookId;
-      });
 
     this.authService.authContext$
       .pipe(takeUntil(this.onDestroy$))
@@ -154,46 +130,74 @@ export class NoteComponent implements OnInit, OnDestroy {
         this.updateContext(res);
       });
 
-    this.loadNote();
-    this.loadNotebook();
+    combineLatest([
+      this.activatedRoute.paramMap,
+      this.authService.authContext$,
+    ])
+      .pipe(
+        takeUntil(this.onDestroy$),
+        map(([params, ctx]) => ({
+          notebookId: params.get('notebookId'),
+          noteId: params.get('noteId'),
+          ctx,
+        })),
+        filter(
+          (x): x is { notebookId: string; noteId: string; ctx: IAuthContext } =>
+            !!x.notebookId && !!x.noteId && !!x.ctx.token,
+        ),
+        distinctUntilChanged(
+          (a, b) =>
+            a.notebookId === b.notebookId &&
+            a.noteId === b.noteId &&
+            a.ctx.token === b.ctx.token,
+        ),
+      )
+      .subscribe(({ notebookId, noteId, ctx }) => {
+        const notebookChanged = notebookId !== this.notebookId;
+        const noteIdentityChanged =
+          notebookId !== this.notebookId || noteId !== this.noteId;
+
+        this.updateContext(ctx);
+        this.notebookId = notebookId;
+        this.noteId = noteId;
+        this.isView.set(noteId !== 'create-note');
+        this.isCreate.set(noteId === 'create-note');
+        this.new_note = noteId === 'create-note';
+
+        if (notebookChanged) {
+          this.notebookLoaded.set(false);
+        }
+        if (noteIdentityChanged) {
+          this.noteLoaded.set(false);
+        }
+
+        void this.loadNote();
+        void this.loadNotebook();
+      });
+
     this.loadMarkdown();
 
     // Wait for the Markdown to load before initializing scroll sync
     setTimeout(() => {
       initScrollSync();
     }, 500);
+  }
 
-    if (this.noteId === 'create-note') {
-      this.new_note = true;
-      this.isCreate.set(true);
-      this.isView.set(true);
+  /**
+   * Called by canDeactivateGuard before leaving the note route when there are unsaved edits.
+   */
+  async confirmNavigateAway(): Promise<boolean> {
+    if (!this.isChanged() || this.isCreate()) return true;
+    if (!this.token || !this.notebookId || !this.noteId || !this.viewText()) {
+      return true;
     }
-
-    this.isChanged$.pipe(takeUntil(this.onDestroy$)).subscribe((res) => {
-      if (res) {
-        this.saveNoteCheck();
-      }
-    });
-
-    this.isView$.pipe(takeUntil(this.onDestroy$)).subscribe((res) => {
-      if (res) {
-        this.saveNoteCheck();
-      }
-    });
-
-    this.isCreate$.pipe(takeUntil(this.onDestroy$)).subscribe((res) => {
-      if (res) {
-        this.saveNoteCheck();
-      }
-    });
+    const ok = await this.persistNote({ skipViewToggle: true });
+    if (ok) this.showSnack();
+    return ok;
   }
 
   readonly showSnack = () => {
-    this.store.dispatch(
-      SnackActions.showSnack({
-        snack: { n_status: true, message: 'Note Saved' },
-      }),
-    );
+    this.snack.showSnack('Note Saved');
   };
 
   readonly exampleNote = () => {
@@ -220,43 +224,23 @@ export class NoteComponent implements OnInit, OnDestroy {
   // Create Note
   readonly createNotePost = async () => {
     if (this.token && this.notebookId && this.viewText()) {
-      this.autoSave.set(false);
       const note_obj = { notebookId: this.notebookId, note: this.viewText() };
       try {
         const response = await createNote(this.token, note_obj);
         this.notebookLoaded.set(true);
         if (response.error) {
-          this.showNotification(`${response.error}`);
+          this.showErrorSnack(response.error, response.fromServer === true);
           return;
         }
         if (response.success) {
           this.isCreate.set(false);
           this.isChanged.set(false);
-          this.autoSave.set(false);
           this.router.navigate([`/notebook/${this.notebookId}`]);
         }
       } catch (err) {
-        this.showNotification(`${err}`);
+        this.showErrorSnack(err, false);
         return;
       }
-    }
-  };
-
-  readonly saveNoteCheck = async () => {
-    if (
-      this.autoSave() &&
-      this.isChanged() &&
-      (this.isView() || this.isChanged()) &&
-      !this.isCreate()
-    ) {
-      const noteSaved = async () => {
-        await this.saveNoteCallback();
-        this.autoSave.update((prev) => false);
-        this.isChanged.set(false);
-        this.authGuard.deactivate = true;
-        this.router.navigate([`${this.navigationUrl}`]);
-      };
-      noteSaved();
     }
   };
 
@@ -268,38 +252,41 @@ export class NoteComponent implements OnInit, OnDestroy {
     this.isSplitScreen.set(!this.isSplitScreen());
   };
 
-  readonly saveNoteCallback = async () => {
-    if (this.token && this.notebookId && this.noteId && this.viewText()) {
-      let response;
-      try {
-        response = await saveNote(
-          this.token,
-          this.notebookId,
-          this.noteId,
-          this.viewText(),
-        );
-        if (response.error) {
-          this.showNotification(`${response.error}`);
-          return;
-        }
-        if (response.success) {
-          this.isChanged.update((prev) => false);
-          this.autoSave.update((prev) => false);
-          this.originalText.set(this.viewText());
-          // Change to View Mode
-          if (this.isView()) {
-            this.toggleEditHandlerCallback();
-          }
-          return response;
-        }
-      } catch (err) {
-        this.showNotification(`${err}`);
-        return;
-      }
-    } else {
-      return;
+  private async persistNote(options?: {
+    skipViewToggle?: boolean;
+  }): Promise<boolean> {
+    if (!this.token || !this.notebookId || !this.noteId || !this.viewText()) {
+      return false;
     }
-    return;
+    try {
+      const response = await saveNote(
+        this.token,
+        this.notebookId,
+        this.noteId,
+        this.viewText(),
+      );
+      if (response.error) {
+        this.showErrorSnack(response.error, response.fromServer === true);
+        return false;
+      }
+      if (response.success) {
+        this.isChanged.set(false);
+        this.originalText.set(this.viewText());
+        if (!options?.skipViewToggle && this.isView()) {
+          this.toggleEditHandlerCallback();
+        }
+        return true;
+      }
+    } catch (err) {
+      this.showErrorSnack(err, false);
+      return false;
+    }
+    return false;
+  }
+
+  readonly saveNoteCallback = async () => {
+    const ok = await this.persistNote();
+    if (ok) this.showSnack();
   };
 
   dimensionsChange = () => {
@@ -329,6 +316,7 @@ export class NoteComponent implements OnInit, OnDestroy {
       this.noteId &&
       this.noteId !== 'create-note' &&
       !this.noteLoaded() &&
+      !this.loadError() &&
       this.token
     ) {
       this.noteLoaded.set(false);
@@ -339,7 +327,9 @@ export class NoteComponent implements OnInit, OnDestroy {
           this.noteId,
         );
         if (response.error) {
-          this.showNotification(`${response.error}`);
+          this.loadError.set(response.error);
+          this.showErrorSnack(response.error, response.fromServer === true);
+          this.noteLoaded.set(true);
           return;
         }
         if (response.success) {
@@ -349,7 +339,11 @@ export class NoteComponent implements OnInit, OnDestroy {
           this.noteLoaded.set(true);
         }
       } catch (err) {
-        this.showNotification(`${err}`);
+        this.loadError.set(
+          err instanceof Error ? err.message : String(err ?? ''),
+        );
+        this.showErrorSnack(err, false);
+        this.noteLoaded.set(true);
         return;
       }
     } else {
@@ -358,20 +352,29 @@ export class NoteComponent implements OnInit, OnDestroy {
   };
 
   loadNotebook = async () => {
-    if (!this.notebookLoaded() && this.token && this.notebookId) {
+    if (
+      !this.notebookLoaded() &&
+      !this.loadError() &&
+      this.token &&
+      this.notebookId
+    ) {
       this.notebookLoaded.set(false);
       try {
         const response = await getNotebook(this.token, this.notebookId);
         this.notebookLoaded.set(true);
         if (response.error) {
-          this.showNotification(`${response.error}`);
+          this.loadError.set(response.error);
+          this.showErrorSnack(response.error, response.fromServer === true);
           return;
         }
         if (response.success) {
           this.store.dispatch(NotebookEditActions.edited(response.notebook));
         }
       } catch (err) {
-        this.showNotification(`${err}`);
+        this.loadError.set(
+          err instanceof Error ? err.message : String(err ?? ''),
+        );
+        this.showErrorSnack(err, false);
         this.notebookLoaded.set(true);
         return;
       }
@@ -383,11 +386,7 @@ export class NoteComponent implements OnInit, OnDestroy {
     this.token = context.token;
   };
 
-  readonly showNotification = (msg: string) => {
-    this.store.dispatch(
-      NotificationActions.showNotification({
-        notification: { n_status: 'error', title: 'Error!', message: msg },
-      }),
-    );
+  readonly showErrorSnack = (err: unknown, fromServer = false) => {
+    this.snack.showErrorSnack(err, fromServer);
   };
 }

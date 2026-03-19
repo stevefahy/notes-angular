@@ -1,117 +1,81 @@
 import { Component, signal, OnDestroy, OnInit, inject } from '@angular/core';
-import {
-  NotificationStatus,
-  NotificationInterface,
-} from 'src/app/core/model/global';
 import { Store } from '@ngrx/store';
-import { selectNotification } from 'src/app/store/selectors/notification.selector';
 import { selectSnack } from 'src/app/store/selectors/snack.selector';
 import { Snack } from 'src/app/store/models/snack.model';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { SnackbarViewComponent } from '../ui/snackbar-view/snackbar-view.component';
 import { CommonModule } from '@angular/common';
 import { MainNavigationComponent } from '../main-navigation/main-navigation.component';
-import { NotificationViewComponent } from '../ui/notification-view/notification-view.component';
 import { Subject, takeUntil } from 'rxjs';
+import { Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 
 // Set the CSS variable --jsvh (Javascript Vertical Height)
-// This var is used because on mobile browsers the css: calc(100vh)
-// includes the browser address bar area.
-// In the /styles/global.css
-// height: calc(100vh - var(--header-footer-height));
-// becomes:
-// height: calc(var(--jsvh) - var(--header-footer-height));
 const setScreenHeight = () => {
-  let jsvh = window && window.innerHeight;
-  let header_height =
-    document &&
-    document.getElementById('header_height')?.getBoundingClientRect().height;
-  document && document.documentElement.style.setProperty('--jsvh', `${jsvh}px`);
-  document &&
-    document.documentElement.style.setProperty(
-      '--jsheader-height',
-      `${header_height}`,
-    );
+  const jsvh = window?.innerHeight;
+  const headerEl = document.getElementById('header_height');
+  const header_height = headerEl?.getBoundingClientRect().height ?? 0;
+  document?.documentElement.style.setProperty('--jsvh', `${jsvh}px`);
+  document?.documentElement.style.setProperty('--jsheader-height', `${header_height}`);
 };
 
 @Component({
   selector: 'Layout',
   standalone: true,
-  imports: [CommonModule, MainNavigationComponent, NotificationViewComponent],
+  imports: [CommonModule, MainNavigationComponent, SnackbarViewComponent],
   templateUrl: './layout.component.html',
   styleUrls: ['./layout.component.scss'],
 })
 export class LayoutComponent implements OnDestroy, OnInit {
   private store = inject(Store);
-  private _snackBar = inject(MatSnackBar);
+  private router = inject(Router);
   private onDestroy$ = new Subject<void>();
 
   private resizeListener: () => void;
 
+  isLoginPage = signal(false);
+
+  private checkLoginPage = () => {
+    const url = this.router.url;
+    this.isLoginPage.set(url === '/login' || url.startsWith('/login'));
+  };
+
   ngOnDestroy(): void {
-    // Remove window resize listener
     if (this.resizeListener && window) {
       window.removeEventListener('resize', this.resizeListener);
     }
-
-    // Clear notification timer
-    if (this.timer_notification) {
-      clearTimeout(this.timer_notification);
-    }
-
-    // Unsubscribe from store observables
-    this.notification$.unsubscribe();
     this.snack$.unsubscribe();
   }
 
   ngOnInit(): void {
-    // Set the initial screenHeight
-    setTimeout(() => {
-      setScreenHeight();
-    }, 0);
+    this.checkLoginPage();
 
-    // Set the screenHeight on window resize (includes orientation change)
-    this.resizeListener = () => {
-      setScreenHeight();
+    const runSetScreenHeight = () => {
+      if (!this.isLoginPage()) {
+        setTimeout(setScreenHeight, 0);
+      }
     };
+    runSetScreenHeight();
 
-    if (window) {
-      window.addEventListener('resize', this.resizeListener);
-    }
+    this.resizeListener = () => {
+      this.checkLoginPage();
+      runSetScreenHeight();
+    };
+    window?.addEventListener('resize', this.resizeListener);
+
+    this.router.events
+      .pipe(
+        filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+        takeUntil(this.onDestroy$)
+      )
+      .subscribe(() => {
+        this.checkLoginPage();
+        runSetScreenHeight();
+      });
   }
 
-  status = signal<NotificationStatus>(null);
-  notification = signal<NotificationInterface>({});
   snackbar = signal<Snack | null>(null);
-
-  timer_notification: NodeJS.Timeout;
-
-  notification$ = this.store.select(selectNotification).subscribe((res) => {
-    this.status.set(res.n_status);
-    if (this.status() !== null) {
-      this.notification.set(res);
-      // Clear existing timer before setting a new one
-      if (this.timer_notification) {
-        clearTimeout(this.timer_notification);
-      }
-      this.timer_notification = setTimeout(() => {
-        this.status.set(null);
-        clearTimeout(this.timer_notification);
-      }, 5000);
-    }
-  });
 
   snack$ = this.store.select(selectSnack).subscribe((res) => {
     this.snackbar.set(res);
-    if (res.n_status !== null && res.message !== null) {
-      this._snackBar.openFromComponent(SnackbarViewComponent, {
-        duration: 2000,
-        panelClass: ['snackbar'],
-        data: {
-          message: res.message,
-          icon: 'check_circle',
-        },
-      });
-    }
   });
 }

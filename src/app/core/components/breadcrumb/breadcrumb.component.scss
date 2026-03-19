@@ -13,18 +13,14 @@
   display: flex;
   align-items: center;
   margin-right: 1px;
+  color: var(--theme-text-muted);
 }
 
-.breadcrumb_link .icon_note {
-  transform: rotate(90deg);
+span.breadcrumb_link:not(a .breadcrumb_link) {
+  color: var(--theme-text);
 }
 
-.breadcrumb_link .icon_notebook {
-  transform: rotate(180deg);
-  transform: scaleY(-1);
-}
-
-.breadcrumb_link_btn:hover {
+a .breadcrumb_link_btn:hover {
   text-decoration: underline;
   cursor: pointer;
 }
@@ -35,20 +31,23 @@
   height: calc(var(--breadcrumb-height) * 1px);
   display: flex;
   align-items: center;
-  padding-left: 20px;
-  padding-right: 20px;
-  background-color: #ffffff;
-  box-shadow: 0px 6px 6px -3px rgb(0 0 0 / 20%),
-    0px 10px 14px 1px rgb(0 0 0 / 14%), 0px 4px 18px 3px rgb(0 0 0 / 12%);
+  padding: 9px 18px;
+  background: var(--theme-surface);
+  border-bottom: 1px solid var(--theme-border);
+  box-shadow: var(--theme-shadow-sm);
   justify-content: flex-start;
   z-index: 6;
 }
 
 .breadcrumbs_inner {
-  width: 100%;
   display: flex;
-  color: rgba(0, 0, 0, 0.6);
   align-items: center;
+  margin: 0;
+  font-family: var(--theme-font-lato);
+  font-size: 16px;
+  line-height: 1.5;
+  letter-spacing: 0.00938em;
+  color: var(--theme-text-muted);
 }
 
 .breadcrumb_edit_btn {
@@ -75,31 +74,44 @@
   display: flex;
   align-items: center;
   margin: 0px;
-  font-family: Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--theme-font-lato);
   font-weight: 400;
-  font-size: 1rem;
+  font-size: 16px;
   line-height: 1.5;
   letter-spacing: 0.00938em;
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--theme-text-muted);
 }
 
 .edit_icon {
   font-size: 20px;
-  margin-top: 5px;
 }
 
+/* Edit notebook FAB — matches Svelte breadCrumb.scss / THEME-UPDATE-PROMPT Section 9 */
 .breadcrumb_edit_fab {
   width: 30px;
   height: 30px;
-  background-color: rgb(224, 224, 224);
-  box-shadow: rgba(0, 0, 0, 0.2) 0px 3px 5px -1px,
-    rgba(0, 0, 0, 0.14) 0px 6px 10px 0px, rgba(0, 0, 0, 0.12) 0px 1px 18px 0px !important;
+  border-radius: 50%;
+  border: 1px solid var(--theme-border);
+  background: var(--theme-bg);
+  color: var(--theme-text);
+  box-shadow: var(--theme-shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,
+    box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,
+    border-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
 }
 
 .breadcrumb_edit_fab:hover,
 .breadcrumb_edit_fab:focus {
-  background-color: rgb(245, 245, 245);
-  transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,
-    box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,
-    border-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  background-color: var(--theme-surface);
+  box-shadow: var(--theme-shadow-mid);
+}
+
+/* Sec-head style for section pages (Notebooks, Profile) — matches Svelte */
+.breadcrumb_container.breadcrumb--section {
+  min-height: calc(var(--breadcrumb-height) * 1px);
 }
