@@ -2,6 +2,8 @@ import {
   Component,
   Input,
   OnInit,
+  OnChanges,
+  SimpleChanges,
   signal,
   INJECTOR,
   inject,
@@ -18,7 +20,7 @@ import {
   CheckedNote,
 } from 'src/app/core/model/global';
 import { toObservable } from '@angular/core/rxjs-interop';
-import { Observable, of, Subject, takeUntil } from 'rxjs';
+import { Observable, Subject, takeUntil } from 'rxjs';
 import DateFormat from 'src/app/core/lib/date-format';
 import {
   extractNoteTitle,
@@ -34,7 +36,9 @@ import { ViewnotethumbComponent } from '../../../viewnote/components/viewnotethu
   styleUrls: ['./note-list.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NoteListComponent implements NotesProps, OnInit, OnDestroy {
+export class NoteListComponent
+  implements NotesProps, OnInit, OnChanges, OnDestroy
+{
   @Input()
   set notes(val: Note[]) {
     this.userNotes.set(val);
@@ -66,7 +70,6 @@ export class NoteListComponent implements NotesProps, OnInit, OnDestroy {
   isChecked = signal<CheckedNote[]>([]);
   isSelected = signal<SelectedNote>({ selected: [] });
 
-  onClearNotesEdit$: Observable<boolean>;
   isSelected$: Observable<SelectedNote>;
 
   private injector = inject(INJECTOR);
@@ -90,17 +93,21 @@ export class NoteListComponent implements NotesProps, OnInit, OnDestroy {
           }
         });
     });
+  }
 
-    this.onClearNotesEdit$ = of(this.onClearNotesEdit);
-    this.onClearNotesEdit$
-      .pipe(takeUntil(this.onDestroy$))
-      .subscribe((onClearNotesEdit: boolean) => {
-        if (onClearNotesEdit) {
-          this.isSelected.update((state) => {
-            return { ...state, selected: [] };
-          });
-        }
-      });
+  ngOnChanges(changes: SimpleChanges): void {
+    const clear = changes['onClearNotesEdit'];
+    if (!clear) {
+      return;
+    }
+    const now = !!clear.currentValue;
+    const prev = clear.previousValue === undefined ? false : !!clear.previousValue;
+    if (now && !prev) {
+      this.isChecked.update((prevChecked) =>
+        prevChecked.map((x) => ({ ...x, selected: false })),
+      );
+      this.isSelected.set({ selected: [] });
+    }
   }
 
   trackuserNotes = (index: number, note: Note) => {
