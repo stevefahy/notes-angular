@@ -301,7 +301,7 @@ export class NoteComponent implements OnInit, OnDestroy {
 
   loadMarkdown = async () => {
     this.http
-      .get(`../../assets/markdown/welcome_markdown_angular.md`, {
+      .get(`../../assets/markdown/welcome_markdown.md`, {
         responseType: 'text',
       })
       .subscribe((res) => {

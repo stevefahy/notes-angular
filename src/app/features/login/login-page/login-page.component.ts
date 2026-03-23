@@ -11,8 +11,6 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
 import {
   AlertInterface,
   IAuthContext,
@@ -276,7 +274,7 @@ export class LoginPageComponent implements OnInit, OnDestroy {
           enteredUsername,
           enteredEmail,
           enteredPassword,
-          'angular',
+          this.AC.FRAMEWORK,
         );
         this.isSubmitting.set(false);
         if (result === null || result === undefined) {

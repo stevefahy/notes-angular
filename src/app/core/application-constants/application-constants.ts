@@ -1,4 +1,5 @@
 const APPLICATION_CONSTANTS = {
+  FRAMEWORK: 'angular',
   // SIGNUP
   SIGNUP_INVALID_USERNAME: `Invalid Username.
     A minimum of 3 characters are required.`,

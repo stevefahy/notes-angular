@@ -1,1 +1,0 @@
-import{P as i,k as o}from"./chunk-G6Y2QOHX.js";import{da as r,h as a}from"./chunk-4MB6GM7K.js";var v=(t,c)=>a(null,null,function*(){let n=r(i),u=r(o),e=yield n.authGuardVerify();return e||(u.navigate(["login"]),!1)}),p=t=>typeof t?.confirmNavigateAway=="function"?t.confirmNavigateAway():!0;export{v as a,p as b};
