@@ -6,6 +6,12 @@ import { EscapeHtmlPipe } from '../../../../core/pipes/keep-html.pipe';
 import fm from 'front-matter';
 import emoji_defs from 'src/app/core/lib/emoji_definitions';
 import { stringifyFrontMatter } from 'src/app/core/lib/front-matter-helper';
+import { scrollToElementByHtmlId } from 'src/app/core/lib/markdownScroll';
+import {
+  sanitizeCustomContainerStyles,
+  sanitizeCustomCssClasses,
+  sanitizeMarkdownTargetId,
+} from 'src/app/core/lib/markdownSafeStyles';
 import markdownItAnchor from 'markdown-it-anchor';
 import Prism from 'prismjs';
 import 'prismjs/components/prism-javascript';
@@ -150,14 +156,9 @@ const getSize = (node: string) => {
 
 // MD RENDERER RULES
 
-// Add target blank to links
-// & Change Anchor links to scrollIntoView
-// Remember old renderer, if overridden, or proxy to default renderer
-var defaultRender =
-  md.renderer.rules['link_open'] ||
-  function (tokens: any, idx: any, options: any, env: any, slf: any) {
-    return slf.renderToken(tokens, idx, options);
-  };
+const anchorLinkStack: boolean[] = [];
+
+const defaultLinkOpen = md.renderer.rules['link_open'];
 
 md.renderer.rules['link_open'] = function (
   tokens: any,
@@ -166,29 +167,39 @@ md.renderer.rules['link_open'] = function (
   env: any,
   slf: any,
 ) {
-  var aIndex = tokens[idx].attrIndex('target');
-  var hIndex = tokens[idx].attrIndex('href');
-  if (aIndex < 0) {
-    tokens[idx].attrPush(['target', '_blank']); // add new attribute
-  } else {
-    tokens[idx].attrs[aIndex][1] = '_blank'; // replace value of existing attr
+  const aIndex = tokens[idx].attrIndex('target');
+  const hIndex = tokens[idx].attrIndex('href');
+  if (aIndex < 0 && tokens[idx].attrs) {
+    tokens[idx].attrPush(['target', '_blank']);
+  } else if (aIndex >= 0 && tokens[idx].attrs) {
+    tokens[idx].attrs[aIndex][1] = '_blank';
   }
-  // Change Anchor links to scrollIntoView
-  // anchor links were causing page reload
-  if (hIndex >= 0) {
-    const link_text = tokens[idx].attrs[hIndex][1];
-    if (link_text.charAt(0) === '#') {
-      tokens[idx].attrs[hIndex][1] = 'javascript: void(0)';
-      const anchor_link = "'" + link_text + "'";
+  if (hIndex >= 0 && tokens[idx].attrs) {
+    const linkText = tokens[idx].attrs[hIndex][1];
+    if (linkText.charAt(0) === '#') {
+      anchorLinkStack.push(true);
+      if (tokens[idx].attrs) tokens[idx].attrs[hIndex][1] = '#';
+      let frag = linkText.slice(1);
+      if (frag.startsWith('user-content-')) {
+        frag = frag.slice('user-content-'.length);
+      }
+      const safeId = sanitizeMarkdownTargetId(frag);
+      const idAttr = safeId ? md.utils.escapeHtml(safeId) : '';
       return (
-        '<span class="md_anchorlink" onclick="document.querySelector(' +
-        anchor_link +
-        ').scrollIntoView()">'
+        '<span class="md_anchorlink" role="link" tabindex="0" data-md-target-id="' +
+        idAttr +
+        '">'
       );
     }
   }
-  return defaultRender(tokens, idx, options, env, slf);
+  anchorLinkStack.push(false);
+  return (
+    defaultLinkOpen?.(tokens, idx, options, env, slf) ??
+    slf.renderToken(tokens, idx, options)
+  );
 };
+
+const defaultLinkClose = md.renderer.rules['link_close'];
 
 md.renderer.rules['link_close'] = function (
   tokens: any,
@@ -197,16 +208,14 @@ md.renderer.rules['link_close'] = function (
   env: any,
   slf: any,
 ) {
-  var hIndex = tokens[idx].attrIndex('href');
-  if (hIndex >= 0) {
-    const link_text = tokens[idx].attrs[hIndex][1];
-    if (link_text.charAt(0) === '#') {
-      // change href
-      tokens[idx].attrs[hIndex][1] = 'javascript: void(0)';
-      return '</span>';
-    }
+  const wasAnchor = anchorLinkStack.pop();
+  if (wasAnchor) {
+    return '</span>';
   }
-  return defaultRender(tokens, idx, options, env, slf);
+  return (
+    defaultLinkClose?.(tokens, idx, options, env, slf) ??
+    slf.renderToken(tokens, idx, options)
+  );
 };
 
 // Add class to table
@@ -236,7 +245,6 @@ md.renderer.rules.image = function (
   );
 };
 
-// Footnotes enable scrollIntoView instead of Anchor link
 md.renderer.rules['footnote_anchor'] = function (
   tokens: any,
   idx: any,
@@ -244,19 +252,19 @@ md.renderer.rules['footnote_anchor'] = function (
   env: any,
   slf: any,
 ) {
-  var id = slf.rules.footnote_anchor_name(tokens, idx, options, env, slf);
-  if (tokens[idx].meta.subId > 0) {
-    id += ':' + tokens[idx].meta.subId;
-  }
-  const newid = "'#fnref" + id + "'";
+  const id =
+    (slf.rules.footnote_anchor_name?.(tokens, idx, options, env, slf) ?? '') +
+    (tokens[idx].meta?.subId && tokens[idx].meta.subId > 0
+      ? ':' + tokens[idx].meta.subId
+      : '');
+  const escId = md.utils.escapeHtml(id);
   return (
-    '<span class="footnote-backref" onclick="document.querySelector(' +
-    newid +
-    ').scrollIntoView()" id="fnref' +
-    id +
+    '<span class="footnote-backref" data-md-footnote-scroll="fnref' +
+    escId +
+    '" id="fnref' +
+    escId +
     '">\u21a9\uFE0E</span>'
   );
-  /* ↩ with escape code to prevent display as Apple Emoji on iOS */
 };
 
 md.renderer.rules['footnote_ref'] = function (
@@ -266,18 +274,22 @@ md.renderer.rules['footnote_ref'] = function (
   env: any,
   slf: any,
 ) {
-  var id = slf.rules.footnote_anchor_name(tokens, idx, options, env, slf);
-  var caption = slf.rules.footnote_caption(tokens, idx, options, env, slf);
-  var refid = id;
-  if (tokens[idx].meta.subId > 0) {
-    refid += ':' + tokens[idx].meta.subId;
-  }
-  const newid = "'#fn" + id + "'";
+  const id =
+    slf.rules.footnote_anchor_name?.(tokens, idx, options, env, slf) ?? '';
+  const caption =
+    slf.rules.footnote_caption?.(tokens, idx, options, env, slf) ?? '';
+  const refid =
+    id +
+    (tokens[idx].meta?.subId && tokens[idx].meta.subId > 0
+      ? ':' + tokens[idx].meta.subId
+      : '');
+  const escRef = md.utils.escapeHtml(refid);
+  const escId = md.utils.escapeHtml(id);
   return (
-    '<sup class="footnote-ref"><span onclick="document.querySelector(' +
-    newid +
-    ').scrollIntoView()" id="fnref' +
-    refid +
+    '<sup class="footnote-ref"><span class="md-footnote-ref" data-md-footnote-scroll="fn' +
+    escId +
+    '" id="fnref' +
+    escRef +
     '">' +
     caption +
     '</span></sup>'
@@ -286,38 +298,31 @@ md.renderer.rules['footnote_ref'] = function (
 
 // CUSTOM CONTAINERS
 
-// Custom container that can have styles added
 md.use(markdownItContainer, 'custom', {
-  validate: function (params: any) {
-    return params.trim().match(/^custom\s+(.*)$/);
-  },
-  render: function (tokens: any, idx: any) {
-    var m = tokens[idx].info.trim().match(/^custom\s+(.*)$/);
+  validate: (params: string) => !!params.trim().match(/^custom\s+(.*)$/),
+  render: (tokens: any, idx: any) => {
+    const m = tokens[idx].info.trim().match(/^custom\s+(.*)$/);
     if (tokens[idx].nesting === 1) {
-      // opening tag
-      return '<span style="' + md.utils.escapeHtml(m[1]) + '">\n';
-    } else {
-      // closing tag
-      return '</span>\n';
+      const safe = sanitizeCustomContainerStyles(m![1] ?? '');
+      if (safe) return '<span style="' + md.utils.escapeHtml(safe) + '">\n';
+      return '<span class="md-custom-unstyled">\n';
     }
+    return '</span>\n';
   },
 });
 
-// Custom container that can have css added
-// md.use(require('markdown-it-container'), 'custom-css', {
 md.use(markdownItContainer, 'custom-css', {
-  validate: function (params: any) {
-    return params.trim().match(/^custom-css\s+(.*)$/);
-  },
-  render: function (tokens: any, idx: any) {
-    var m = tokens[idx].info.trim().match(/^custom-css\s+(.*)$/);
+  validate: (params: string) => !!params.trim().match(/^custom-css\s+(.*)$/),
+  render: (tokens: any, idx: any) => {
     if (tokens[idx].nesting === 1) {
-      // opening tag
-      return '<span class="' + md.utils.escapeHtml(m[1]) + '">\n';
-    } else {
-      // closing tag
-      return '</span>\n';
+      const m = tokens[idx].info.trim().match(/^custom-css\s+(.*)$/);
+      if (!m) return '';
+      const classes = sanitizeCustomCssClasses(m[1]);
+      if (classes)
+        return '<span class="' + md.utils.escapeHtml(classes) + '">\n';
+      return '<span class="md-custom-css-fallback">\n';
     }
+    return '</span>\n';
   },
 });
 
@@ -368,8 +373,48 @@ export class ViewnoteMarkdownComponent
 
   ngOnInit(): void {}
 
-  onCheckboxClick(event: MouseEvent): void {
-    // Only process if update callback exists (not read-only)
+  onMarkdownClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+
+    const foot = target.closest<HTMLElement>('[data-md-footnote-scroll]');
+    if (foot) {
+      const to = foot.getAttribute('data-md-footnote-scroll');
+      if (to) {
+        event.preventDefault();
+        scrollToElementByHtmlId(to);
+      }
+      return;
+    }
+
+    const anchor = target.closest<HTMLElement>(
+      '.md_anchorlink[data-md-target-id]',
+    );
+    if (anchor) {
+      const id = anchor.getAttribute('data-md-target-id');
+      if (id) {
+        event.preventDefault();
+        scrollToElementByHtmlId(id);
+      }
+      return;
+    }
+
+    this.onCheckboxClick(event);
+  }
+
+  onMarkdownKeyDown(event: KeyboardEvent): void {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    const target = event.target as HTMLElement;
+    const anchor = target.closest<HTMLElement>(
+      '.md_anchorlink[data-md-target-id]',
+    );
+    if (!anchor || !anchor.contains(target)) return;
+    const id = anchor.getAttribute('data-md-target-id');
+    if (!id) return;
+    event.preventDefault();
+    scrollToElementByHtmlId(id);
+  }
+
+  private onCheckboxClick(event: MouseEvent): void {
     if (!this.updatedViewText) {
       return;
     }
@@ -391,7 +436,6 @@ export class ViewnoteMarkdownComponent
         (input as HTMLInputElement).type === 'checkbox'
       ) {
         checkbox = input as HTMLInputElement;
-        // Label click toggles the checkbox; use the new state
         checked = !checkbox.checked;
       }
     }
@@ -400,7 +444,7 @@ export class ViewnoteMarkdownComponent
       return;
     }
 
-    const taskIndex = parseInt(checkbox.id.slice(4), 10); // 4 = length of 'cbx_'
+    const taskIndex = parseInt(checkbox.id.slice(4), 10);
     if (isNaN(taskIndex) || taskIndex < 0) {
       return;
     }

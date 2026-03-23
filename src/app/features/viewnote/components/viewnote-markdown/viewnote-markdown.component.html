@@ -1,6 +1,7 @@
-<div 
+<div
   class="md-rendered"
   [class.md-readonly]="!updatedViewText"
-  (click)="onCheckboxClick($event)">
+  (click)="onMarkdownClick($event)"
+  (keydown)="onMarkdownKeyDown($event)">
   <span [innerHTML]="outHtml | keepHtml"></span>
 </div>
