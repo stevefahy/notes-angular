@@ -1,0 +1,1 @@
+import{O as i,j as o}from"./chunk-JITC2CFA.js";import{X as r}from"./chunk-GNBTYOEN.js";import{h as a}from"./chunk-WWX6BADO.js";var v=(t,c)=>a(null,null,function*(){let n=r(i),u=r(o),e=yield n.authGuardVerify();return e||(u.navigate(["login"]),!1)}),p=t=>typeof t?.confirmNavigateAway=="function"?t.confirmNavigateAway():!0;export{v as a,p as b};

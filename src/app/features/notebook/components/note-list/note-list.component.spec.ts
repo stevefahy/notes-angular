@@ -8,7 +8,7 @@ describe('NoteListComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [NoteListComponent]
+      imports: [NoteListComponent]
     });
     fixture = TestBed.createComponent(NoteListComponent);
     component = fixture.componentInstance;

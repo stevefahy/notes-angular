@@ -8,7 +8,7 @@ describe('NotebooksNolinkComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [NotebooksNolinkComponent]
+      imports: [NotebooksNolinkComponent]
     });
     fixture = TestBed.createComponent(NotebooksNolinkComponent);
     component = fixture.componentInstance;

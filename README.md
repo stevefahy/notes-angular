@@ -16,6 +16,11 @@ Open [http://localhost:4200](http://localhost:4200) with your browser to see the
 Run `ng build` for a production build.`. 
 ```
 
+
+```bash
+Run `ng test` to execute unit tests`. 
+```
+
 The production files are in /dist/notes-angular-public/browser
 
 ## About

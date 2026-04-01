@@ -8,7 +8,7 @@ describe('AddNotebookFormComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [AddNotebookFormComponent]
+      imports: [AddNotebookFormComponent]
     });
     fixture = TestBed.createComponent(AddNotebookFormComponent);
     component = fixture.componentInstance;

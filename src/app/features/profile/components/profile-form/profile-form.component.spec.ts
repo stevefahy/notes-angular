@@ -8,7 +8,7 @@ describe('ProfileFormComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [ProfileFormComponent]
+      imports: [ProfileFormComponent]
     });
     fixture = TestBed.createComponent(ProfileFormComponent);
     component = fixture.componentInstance;

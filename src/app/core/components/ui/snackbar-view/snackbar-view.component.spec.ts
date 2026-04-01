@@ -8,7 +8,7 @@ describe('SnackbarViewComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [SnackbarViewComponent]
+      imports: [SnackbarViewComponent]
     });
     fixture = TestBed.createComponent(SnackbarViewComponent);
     component = fixture.componentInstance;

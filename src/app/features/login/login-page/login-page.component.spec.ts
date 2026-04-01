@@ -1,6 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { LoginPageComponent } from './login-page.component';
+import {
+  componentTestImports,
+  componentTestProviders,
+} from 'src/app/testing/component-test-defaults';
 
 describe('LoginPageComponent', () => {
   let component: LoginPageComponent;
@@ -8,7 +12,8 @@ describe('LoginPageComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [LoginPageComponent]
+      imports: [LoginPageComponent, ...componentTestImports],
+      providers: componentTestProviders,
     });
     fixture = TestBed.createComponent(LoginPageComponent);
     component = fixture.componentInstance;

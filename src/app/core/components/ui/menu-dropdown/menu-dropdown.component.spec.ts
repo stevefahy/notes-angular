@@ -1,6 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MenuDropdownComponent } from './menu-dropdown.component';
+import {
+  componentTestImports,
+  componentTestProviders,
+} from 'src/app/testing/component-test-defaults';
 
 describe('MenuDropdownComponent', () => {
   let component: MenuDropdownComponent;
@@ -8,7 +12,8 @@ describe('MenuDropdownComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [MenuDropdownComponent]
+      imports: [MenuDropdownComponent, ...componentTestImports],
+      providers: componentTestProviders,
     });
     fixture = TestBed.createComponent(MenuDropdownComponent);
     component = fixture.componentInstance;

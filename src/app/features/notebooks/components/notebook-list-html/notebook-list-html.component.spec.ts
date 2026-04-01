@@ -8,7 +8,7 @@ describe('NotebookListHtmlComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [NotebookListHtmlComponent]
+      imports: [NotebookListHtmlComponent]
     });
     fixture = TestBed.createComponent(NotebookListHtmlComponent);
     component = fixture.componentInstance;

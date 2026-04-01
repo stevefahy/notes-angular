@@ -8,7 +8,7 @@ describe('ViewnoteComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [ViewnoteComponent]
+      imports: [ViewnoteComponent]
     });
     fixture = TestBed.createComponent(ViewnoteComponent);
     component = fixture.componentInstance;

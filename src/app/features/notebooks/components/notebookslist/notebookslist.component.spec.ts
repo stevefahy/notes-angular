@@ -1,6 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { NotebookslistComponent } from './notebookslist.component';
+import {
+  componentTestImports,
+  componentTestProviders,
+} from 'src/app/testing/component-test-defaults';
 
 describe('NotebookslistComponent', () => {
   let component: NotebookslistComponent;
@@ -8,7 +12,8 @@ describe('NotebookslistComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [NotebookslistComponent]
+      imports: [NotebookslistComponent, ...componentTestImports],
+      providers: componentTestProviders,
     });
     fixture = TestBed.createComponent(NotebookslistComponent);
     component = fixture.componentInstance;

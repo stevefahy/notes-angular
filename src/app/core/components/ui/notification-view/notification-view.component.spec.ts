@@ -8,7 +8,7 @@ describe('NotificationViewComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [NotificationViewComponent]
+      imports: [NotificationViewComponent]
     });
     fixture = TestBed.createComponent(NotificationViewComponent);
     component = fixture.componentInstance;

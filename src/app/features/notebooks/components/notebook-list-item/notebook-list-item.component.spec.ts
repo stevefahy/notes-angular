@@ -8,7 +8,7 @@ describe('NotebookListItemComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [NotebookListItemComponent]
+      imports: [NotebookListItemComponent]
     });
     fixture = TestBed.createComponent(NotebookListItemComponent);
     component = fixture.componentInstance;

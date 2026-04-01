@@ -3,7 +3,9 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/spec",
-    "types": ["jasmine"]
+    "types": ["jasmine", "node"],
+    "skipLibCheck": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable", "ES2024"]
   },
   "include": ["src/**/*.spec.ts", "src/**/*.d.ts"]
 }

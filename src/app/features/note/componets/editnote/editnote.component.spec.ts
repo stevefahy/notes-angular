@@ -8,7 +8,7 @@ describe('EditnoteComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [EditnoteComponent]
+      imports: [EditnoteComponent]
     });
     fixture = TestBed.createComponent(EditnoteComponent);
     component = fixture.componentInstance;

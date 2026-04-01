@@ -8,7 +8,7 @@ describe('ErrorAlertComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [ErrorAlertComponent]
+      imports: [ErrorAlertComponent]
     });
     fixture = TestBed.createComponent(ErrorAlertComponent);
     component = fixture.componentInstance;

@@ -8,7 +8,7 @@ describe('LoadingScreenComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [LoadingScreenComponent]
+      imports: [LoadingScreenComponent]
     });
     fixture = TestBed.createComponent(LoadingScreenComponent);
     component = fixture.componentInstance;

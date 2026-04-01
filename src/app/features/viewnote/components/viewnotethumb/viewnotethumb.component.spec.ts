@@ -8,7 +8,7 @@ describe('ViewnotethumbComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [ViewnotethumbComponent]
+      imports: [ViewnotethumbComponent]
     });
     fixture = TestBed.createComponent(ViewnotethumbComponent);
     component = fixture.componentInstance;
