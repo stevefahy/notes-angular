@@ -356,7 +356,11 @@ export class NoteComponent implements OnInit, OnDestroy {
         this.updateContext(ctx);
         this.notebookId = notebookId;
         this.noteId = noteId;
-        this.isView.set(noteId !== 'create-note');
+        // Only reset edit/view when the note route changes. Token refresh re-emits
+        // this stream but must not force View mode (matches Svelte NotePage behavior).
+        if (noteIdentityChanged) {
+          this.isView.set(noteId !== 'create-note');
+        }
         this.isCreate.set(noteId === 'create-note');
         this.new_note = noteId === 'create-note';
 
@@ -383,7 +387,7 @@ export class NoteComponent implements OnInit, OnDestroy {
     if (!this.token || !this.notebookId || !this.noteId || !this.viewText()) {
       return true;
     }
-    const ok = await this.persistNote({ skipViewToggle: true });
+    const ok = await this.persistNote();
     if (ok) this.showSnack();
     return ok;
   }
@@ -449,9 +453,7 @@ export class NoteComponent implements OnInit, OnDestroy {
     this.isSplitScreen.set(!this.isSplitScreen());
   };
 
-  private async persistNote(options?: {
-    skipViewToggle?: boolean;
-  }): Promise<boolean> {
+  private async persistNote(): Promise<boolean> {
     if (!this.token || !this.notebookId || !this.noteId || !this.viewText()) {
       return false;
     }
@@ -469,9 +471,6 @@ export class NoteComponent implements OnInit, OnDestroy {
       if (response.success) {
         this.isChanged.set(false);
         this.originalText.set(this.viewText());
-        if (!options?.skipViewToggle && this.isView()) {
-          this.toggleEditHandlerCallback();
-        }
         return true;
       }
     } catch (err) {
