@@ -74,6 +74,7 @@ $notes-angular-theme: mat.m2-define-light-theme(
 @include mat.all-component-themes($notes-angular-theme);
 
 @import url("./styles/global.scss");
+@import url("./styles/note-shell.css");
 @import url("./styles/prism-atom-dark.scss");
 
 .material-icons-outlined {

@@ -11,8 +11,10 @@
   <div ngClass="page_scrollable_header_breadcrumb_footer">
     @if (noteLoaded() && token !== null) {
       <div
+        #viewContainer
         ngClass="view_container"
         [class.editnote_box_split]="isSplitScreen()"
+        [attr.data-note-layout]="noteShellLayout()"
         id="view_container"
       >
         <EditNote

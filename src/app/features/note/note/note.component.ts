@@ -7,6 +7,10 @@ import {
   inject,
   OnDestroy,
   ChangeDetectionStrategy,
+  computed,
+  afterRenderEffect,
+  viewChild,
+  ElementRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
@@ -36,7 +40,19 @@ import { createNote } from '../../../core/helpers/createNote';
 import {
   initScrollSync,
   removeScrollListeners,
+  detachScrollSyncListeners,
+  captureSplitEnterScrollSnap,
+  stabilizeSplitEnterScroll,
+  alignNotePanesScroll,
+  type SplitEnterScrollSnap,
 } from '../../../core/lib/scroll_sync';
+import {
+  commitNoteShellTransition,
+  getNoteShellEditViewTransitionCleanupMs,
+  getNoteShellSplitTransitionCleanupMs,
+  type NoteShellLayout,
+} from '../../../core/lib/note-shell-dom';
+import { attachNoteShellSwipeNavigation } from '../../../core/lib/note-shell-swipe';
 import APPLICATION_CONSTANTS from '../../../core/application-constants/application-constants';
 import { LoadingScreenComponent } from '../../../core/components/ui/loading-screen/loading-screen.component';
 import { FooterComponent } from '../../../core/components/footer/footer.component';
@@ -70,6 +86,22 @@ export class NoteComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private snack = inject(SnackService);
 
+  readonly viewContainer = viewChild<ElementRef<HTMLElement>>('viewContainer');
+
+  readonly noteShellLayout = computed<NoteShellLayout>(() =>
+    this.isSplitScreen() ? 'split' : this.isView() ? 'view' : 'edit',
+  );
+
+  private prevNoteShellLayoutForTransition: NoteShellLayout | null = null;
+  private prevNoteShellLayoutScroll: NoteShellLayout | null = null;
+  private prevIsSplitForScroll = false;
+  private splitEnterFrom: 'edit' | 'view' | null = null;
+  private splitEnterSnap: SplitEnterScrollSnap | null = null;
+  private splitPostAlignTimeoutId: number | null = null;
+  private splitStabilizeCleanup: (() => void) | null = null;
+  private scrollOrchestrationCleanup: (() => void) | null = null;
+  private swipeDetach: (() => void) | null = null;
+
   notebookId: string;
   noteId: string;
   loading: boolean | null;
@@ -102,8 +134,172 @@ export class NoteComponent implements OnInit, OnDestroy {
 
   onDestroy$: Subject<void> = new Subject();
 
+  constructor() {
+    afterRenderEffect(() => {
+      const layout = this.noteShellLayout();
+      const el = this.viewContainer()?.nativeElement;
+      if (!el) {
+        this.prevNoteShellLayoutForTransition = null;
+        return;
+      }
+      const prev = this.prevNoteShellLayoutForTransition;
+      if (prev !== null && prev !== layout) {
+        commitNoteShellTransition(el, prev, layout);
+      }
+      this.prevNoteShellLayoutForTransition = layout;
+    });
+
+    afterRenderEffect(() => {
+      this.noteShellLayout();
+      this.isSplitScreen();
+      this.isView();
+
+      this.scrollOrchestrationCleanup?.();
+      this.scrollOrchestrationCleanup = null;
+
+      const noteShellLayout = this.noteShellLayout();
+      const isSplitScreen = this.isSplitScreen();
+
+      const prevLayout = this.prevNoteShellLayoutScroll;
+      const editViewTransition =
+        prevLayout !== null &&
+        ((prevLayout === 'edit' && noteShellLayout === 'view') ||
+          (prevLayout === 'view' && noteShellLayout === 'edit'));
+
+      const wasSplit = this.prevIsSplitForScroll;
+      const leavingSplit = wasSplit && !isSplitScreen;
+      const enteringSplit = !wasSplit && isSplitScreen;
+      if (enteringSplit) {
+        this.splitEnterFrom = this.isView() ? 'view' : 'edit';
+      }
+      this.prevIsSplitForScroll = isSplitScreen;
+
+      if (leavingSplit || enteringSplit || editViewTransition) {
+        detachScrollSyncListeners();
+      }
+
+      if (this.splitPostAlignTimeoutId !== null) {
+        window.clearTimeout(this.splitPostAlignTimeoutId);
+        this.splitPostAlignTimeoutId = null;
+      }
+      this.splitStabilizeCleanup?.();
+      this.splitStabilizeCleanup = null;
+
+      let raf1 = 0;
+      let raf2 = 0;
+      const splitFrom = this.splitEnterFrom;
+      const snapCaptured = this.splitEnterSnap;
+
+      const cleanup = (): void => {
+        cancelAnimationFrame(raf1);
+        cancelAnimationFrame(raf2);
+        if (this.splitPostAlignTimeoutId !== null) {
+          window.clearTimeout(this.splitPostAlignTimeoutId);
+          this.splitPostAlignTimeoutId = null;
+        }
+        this.splitStabilizeCleanup?.();
+        this.splitStabilizeCleanup = null;
+      };
+      this.scrollOrchestrationCleanup = cleanup;
+
+      raf1 = requestAnimationFrame(() => {
+        raf2 = requestAnimationFrame(() => {
+          if (!isSplitScreen) {
+            if (leavingSplit) {
+              const exitSettleMs =
+                getNoteShellSplitTransitionCleanupMs() + 120;
+              this.splitPostAlignTimeoutId = window.setTimeout(() => {
+                this.splitPostAlignTimeoutId = null;
+                requestAnimationFrame(() => {
+                  requestAnimationFrame(() => {
+                    this.splitEnterFrom = null;
+                    initScrollSync();
+                  });
+                });
+              }, exitSettleMs);
+              return;
+            }
+            if (editViewTransition) {
+              const settleMs =
+                getNoteShellEditViewTransitionCleanupMs() + 120;
+              this.splitPostAlignTimeoutId = window.setTimeout(() => {
+                this.splitPostAlignTimeoutId = null;
+                requestAnimationFrame(() => {
+                  requestAnimationFrame(() => {
+                    alignNotePanesScroll(noteShellLayout, null);
+                    this.splitEnterFrom = null;
+                    initScrollSync();
+                  });
+                });
+              }, settleMs);
+              return;
+            }
+            alignNotePanesScroll(noteShellLayout, null);
+            this.splitEnterFrom = null;
+            initScrollSync();
+            return;
+          }
+
+          const splitEnterWithOrigin = splitFrom !== null;
+          if (splitEnterWithOrigin) {
+            this.splitEnterFrom = null;
+          }
+
+          if (splitEnterWithOrigin && snapCaptured) {
+            this.splitEnterSnap = null;
+            const splitStabilizeMs =
+              getNoteShellSplitTransitionCleanupMs() + 120;
+            this.splitStabilizeCleanup = stabilizeSplitEnterScroll(
+              snapCaptured,
+              splitStabilizeMs,
+              () => {
+                this.splitStabilizeCleanup = null;
+                initScrollSync();
+              },
+            );
+            return;
+          }
+
+          if (splitEnterWithOrigin) {
+            this.splitPostAlignTimeoutId = window.setTimeout(() => {
+              this.splitPostAlignTimeoutId = null;
+              alignNotePanesScroll('split', splitFrom);
+              initScrollSync();
+            }, getNoteShellSplitTransitionCleanupMs());
+            return;
+          }
+
+          alignNotePanesScroll('split', null);
+          initScrollSync();
+        });
+      });
+
+      this.prevNoteShellLayoutScroll = noteShellLayout;
+    });
+
+    afterRenderEffect(() => {
+      this.swipeDetach?.();
+      this.swipeDetach = null;
+      const el = this.viewContainer()?.nativeElement;
+      if (!el) return;
+      if (this.noteShellLayout() === 'split') return;
+      this.swipeDetach = attachNoteShellSwipeNavigation(
+        el,
+        () => this.noteShellLayout(),
+        {
+          onSwipeToView: () => this.isView.set(true),
+          onSwipeToEdit: () => this.isView.set(false),
+        },
+      );
+    });
+  }
+
   ngOnDestroy(): void {
     this.removeListener();
+    this.scrollOrchestrationCleanup?.();
+    this.scrollOrchestrationCleanup = null;
+    this.swipeDetach?.();
+    this.swipeDetach = null;
     removeScrollListeners();
 
     this.onDestroy$.next();
@@ -177,15 +373,11 @@ export class NoteComponent implements OnInit, OnDestroy {
 
     this.loadMarkdown();
 
-    // Wait for the Markdown to load before initializing scroll sync
     setTimeout(() => {
       initScrollSync();
     }, 500);
   }
 
-  /**
-   * Called by canDeactivateGuard before leaving the note route when there are unsaved edits.
-   */
   async confirmNavigateAway(): Promise<boolean> {
     if (!this.isChanged() || this.isCreate()) return true;
     if (!this.token || !this.notebookId || !this.noteId || !this.viewText()) {
@@ -202,6 +394,7 @@ export class NoteComponent implements OnInit, OnDestroy {
 
   readonly exampleNote = () => {
     if (!this.isMobile()) {
+      this.splitEnterSnap = captureSplitEnterScrollSnap(this.isView());
       this.isSplitScreen.set(true);
     }
     this.updatedViewTextHandler(this.WELCOME_NOTE());
@@ -221,7 +414,6 @@ export class NoteComponent implements OnInit, OnDestroy {
     }
   };
 
-  // Create Note
   readonly createNotePost = async () => {
     if (this.token && this.notebookId && this.viewText()) {
       const note_obj = { notebookId: this.notebookId, note: this.viewText() };
@@ -249,6 +441,11 @@ export class NoteComponent implements OnInit, OnDestroy {
   };
 
   readonly toggleSplitHandlerCallback = () => {
+    if (!this.isSplitScreen()) {
+      this.splitEnterSnap = captureSplitEnterScrollSnap(this.isView());
+    } else {
+      this.splitEnterSnap = null;
+    }
     this.isSplitScreen.set(!this.isSplitScreen());
   };
 

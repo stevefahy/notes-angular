@@ -1,21 +1,21 @@
 <div
   id="edit"
-  ngClass="edit editnote_box {{
-    isSplitscreen() ? 'view_split show' : isVisible() ? 'show' : 'hide'
-  }}"
+  class="note-pane note-pane--edit edit editnote_box"
 >
-  <div class="edit-note">
-    <div class="note-card">
-      <article class="v-card-text viewnote_content editor">
-        <div
-          #noteInputRef
-          contentEditable="{{ isVisible() || isSplitscreen() }}"
-          ngClass="viewnote_content editable"
-          (input)="setText($event)"
-          data-placeholder="Start writing..."
-          role="textbox"
-        ></div>
-      </article>
+  <div class="note-pane-scroll">
+    <div class="edit-note">
+      <div class="note-card">
+        <article class="v-card-text viewnote_content editor">
+          <div
+            #noteInputRef
+            contentEditable="{{ isVisible() || isSplitscreen() }}"
+            ngClass="viewnote_content editable"
+            (input)="setText($event)"
+            data-placeholder="Start writing..."
+            role="textbox"
+          ></div>
+        </article>
+      </div>
     </div>
   </div>
 </div>

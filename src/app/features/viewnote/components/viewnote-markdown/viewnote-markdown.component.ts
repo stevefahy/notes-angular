@@ -1,8 +1,17 @@
-import { Component, Input, OnInit, signal, inject } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit,
+  signal,
+  inject,
+  afterRenderEffect,
+  viewChild,
+  ElementRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import morphdom from 'morphdom';
 import { ViewNoteMarkdownProps } from 'src/app/core/model/global';
-import { EscapeHtmlPipe } from '../../../../core/pipes/keep-html.pipe';
 import fm from 'front-matter';
 import emoji_defs from 'src/app/core/lib/emoji_definitions';
 import { stringifyFrontMatter } from 'src/app/core/lib/front-matter-helper';
@@ -329,7 +338,7 @@ md.use(markdownItContainer, 'custom-css', {
 @Component({
   selector: 'ViewNoteMarkdown',
   standalone: true,
-  imports: [CommonModule, EscapeHtmlPipe],
+  imports: [CommonModule],
   templateUrl: './viewnote-markdown.component.html',
   styleUrls: ['./viewnote-markdown.component.scss'],
 })
@@ -344,6 +353,7 @@ export class ViewnoteMarkdownComponent
       this.contextView.update((prev) => this.content);
       this.isLoaded.set(true);
       this.outHtml = this.markdown.render(this.contextView());
+      this.morphHtml.set(this.outHtml);
     }
   }
   @Input() scrollView?: number | undefined;
@@ -352,15 +362,81 @@ export class ViewnoteMarkdownComponent
   @Input() disableLinks: boolean;
 
   private markdown;
-  outHtml;
+  outHtml: string;
   currenturl;
 
   private router = inject(Router);
+  readonly mdHost = viewChild<ElementRef<HTMLElement>>('mdHost');
+  private readonly morphHtml = signal<string>('');
 
   constructor() {
     this.currenturl = this.router.url;
     this.markdown = md;
     this.outHtml = this.markdown.render(this.contextView());
+    this.morphHtml.set(this.outHtml);
+
+    afterRenderEffect(() => {
+      const html = this.morphHtml();
+      const host = this.mdHost()?.nativeElement;
+      if (!host) return;
+
+      if (!html) {
+        host.replaceChildren();
+        return;
+      }
+
+      const temp = document.createElement('span');
+      temp.innerHTML = html;
+
+      morphdom(host, temp, {
+        childrenOnly: true,
+        getNodeKey: (node) => {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            const el = node as Element;
+            if (el.classList.contains('image')) {
+              const img = el.querySelector('img');
+              if (img) return `img-${img.getAttribute('src')}`;
+            }
+            if (el.tagName === 'IMG') {
+              return `img-${el.getAttribute('src')}`;
+            }
+          }
+          return undefined;
+        },
+        onBeforeElUpdated: (fromEl, toEl) => {
+          if (
+            fromEl.classList.contains('image') &&
+            toEl.classList.contains('image')
+          ) {
+            const fromImg = fromEl.querySelector('img');
+            const toImg = toEl.querySelector('img');
+            if (
+              fromImg &&
+              toImg &&
+              fromImg.getAttribute('src') === toImg.getAttribute('src')
+            ) {
+              for (const attr of Array.from(toImg.attributes)) {
+                if (fromImg.getAttribute(attr.name) !== attr.value) {
+                  fromImg.setAttribute(attr.name, attr.value);
+                }
+              }
+              return false;
+            }
+          }
+          if (fromEl.tagName === 'IMG' && toEl.tagName === 'IMG') {
+            if (fromEl.getAttribute('src') === toEl.getAttribute('src')) {
+              for (const attr of Array.from(toEl.attributes)) {
+                if (fromEl.getAttribute(attr.name) !== attr.value) {
+                  fromEl.setAttribute(attr.name, attr.value);
+                }
+              }
+              return false;
+            }
+          }
+          return true;
+        },
+      });
+    });
   }
 
   content: string;

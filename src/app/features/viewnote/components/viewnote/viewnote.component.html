@@ -1,22 +1,19 @@
-<div
-  id="view"
-  ngClass="view editnote_box {{
-    splitScreen ? 'view_split show' : visible ? 'show' : 'hide'
-  }}"
->
-  <div class="note-card">
-    <div id="viewnote_id" class="v-card-text cardcontent viewnote_content">
-      @if (!isLoaded()) {
-        <ngx-skeleton-loader count="1" appearance="line"></ngx-skeleton-loader>
-      }
-      @if (isLoaded()) {
-        <ViewNoteMarkdown
-          [splitScreen]="splitScreen"
-          [viewText]="contextView()"
-          [updatedViewText]="updateViewText"
-          [disableLinks]="false"
-        />
-      }
+<div id="view" class="note-pane note-pane--view view editnote_box">
+  <div class="note-pane-scroll">
+    <div class="note-card">
+      <div id="viewnote_id" class="v-card-text cardcontent viewnote_content">
+        @if (!isLoaded()) {
+          <ngx-skeleton-loader count="1" appearance="line"></ngx-skeleton-loader>
+        }
+        @if (isLoaded()) {
+          <ViewNoteMarkdown
+            [splitScreen]="splitScreen"
+            [viewText]="contextView()"
+            [updatedViewText]="updateViewText"
+            [disableLinks]="false"
+          />
+        }
+      </div>
     </div>
   </div>
 </div>

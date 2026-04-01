@@ -1,64 +1,213 @@
-let ignoreScrollEvents = false;
+let editScrollEl: HTMLElement | null = null;
+let viewScrollEl: HTMLElement | null = null;
+let editScrollHandler: (() => void) | null = null;
+let viewScrollHandler: (() => void) | null = null;
 
-let edit: HTMLElement | null;
-let view: HTMLElement | null;
+let isSyncing = false;
 
-export const initScrollSync = () => {
-  edit = document.querySelector('#edit');
-  view = document.querySelector('#view');
-  addScrollListeners();
+const SCROLL_BOTTOM_EPS = 2;
+
+export type SplitEnterScrollSnap = {
+  from: 'edit' | 'view';
+  atBottom: boolean;
 };
 
-export const removeScrollSync = () => {
-  removeScrollListeners();
-};
+function notePaneScroll(root: HTMLElement | null): HTMLElement | null {
+  if (!root) return null;
+  return root.querySelector<HTMLElement>('.note-pane-scroll') ?? root;
+}
 
-const calcScroll = (element1: HTMLElement, element2: HTMLElement) => {
-  let scroll_end = element2.scrollHeight - element2.clientHeight;
-  let percent =
-    (element1.scrollTop / (element1.scrollHeight - element1.clientHeight)) *
-    100;
-  let percent_to_pos = scroll_end * (percent / 100);
-  return percent_to_pos;
-};
+function clearAttachedScrollListeners(): void {
+  if (editScrollEl && editScrollHandler) {
+    editScrollEl.removeEventListener('scroll', editScrollHandler);
+  }
+  if (viewScrollEl && viewScrollHandler) {
+    viewScrollEl.removeEventListener('scroll', viewScrollHandler);
+  }
+  editScrollEl = null;
+  viewScrollEl = null;
+  editScrollHandler = null;
+  viewScrollHandler = null;
+}
 
-export const removeScrollListeners = () => {
-  edit?.removeEventListener('scroll', editScroll);
-  view?.removeEventListener('scroll', viewScroll);
-};
+function syncScrollFromTo(from: HTMLElement, to: HTMLElement): void {
+  const fromMax = from.scrollHeight - from.clientHeight;
+  const toMax = to.scrollHeight - to.clientHeight;
+  if (toMax <= 0) {
+    isSyncing = true;
+    to.scrollTop = 0;
+    requestAnimationFrame(() => {
+      isSyncing = false;
+    });
+    return;
+  }
+  if (fromMax > 0 && from.scrollTop >= fromMax - SCROLL_BOTTOM_EPS) {
+    isSyncing = true;
+    to.scrollTop = toMax;
+    requestAnimationFrame(() => {
+      isSyncing = false;
+    });
+    return;
+  }
+  const ratio = fromMax > 0 ? from.scrollTop / fromMax : 0;
+  isSyncing = true;
+  to.scrollTop = ratio * toMax;
+  requestAnimationFrame(() => {
+    isSyncing = false;
+  });
+}
 
-const editScroll = () => {
-  let element2 = view!;
-  let element1 = edit!;
+function makeScrollHandler(
+  source: HTMLElement,
+  target: HTMLElement | null,
+): () => void {
+  return () => {
+    if (isSyncing || !target) return;
+    syncScrollFromTo(source, target);
+  };
+}
 
-  let percent_to_pos = calcScroll(element1, element2);
+export function captureSplitEnterScrollSnap(
+  isView: boolean,
+): SplitEnterScrollSnap | null {
+  if (typeof document === 'undefined') return null;
+  const from = isView ? 'view' : 'edit';
+  const root = document.querySelector(`#${from}`);
+  const el = root instanceof HTMLElement ? notePaneScroll(root) : null;
+  if (!el) return null;
+  const max = el.scrollHeight - el.clientHeight;
+  const atBottom = max > 0 && el.scrollTop >= max - SCROLL_BOTTOM_EPS;
+  return { from, atBottom };
+}
 
-  var ignore = ignoreScrollEvents;
-  ignoreScrollEvents = false;
-  if (ignore) return;
-  ignoreScrollEvents = true;
-  element2.scrollTop = percent_to_pos;
-};
+function getEditViewScrollEls(): [HTMLElement, HTMLElement] | null {
+  const editRoot = document.querySelector('#edit');
+  const viewRoot = document.querySelector('#view');
+  const editScroll =
+    editRoot instanceof HTMLElement ? notePaneScroll(editRoot) : null;
+  const viewScroll =
+    viewRoot instanceof HTMLElement ? notePaneScroll(viewRoot) : null;
+  if (!editScroll || !viewScroll) return null;
+  return [editScroll, viewScroll];
+}
 
-const viewScroll = () => {
-  let element1 = view!;
-  let element2 = edit!;
+function pinBothPanesToBottom(
+  editScroll: HTMLElement,
+  viewScroll: HTMLElement,
+): void {
+  isSyncing = true;
+  editScroll.scrollTop = Math.max(
+    0,
+    editScroll.scrollHeight - editScroll.clientHeight,
+  );
+  viewScroll.scrollTop = Math.max(
+    0,
+    viewScroll.scrollHeight - viewScroll.clientHeight,
+  );
+  requestAnimationFrame(() => {
+    isSyncing = false;
+  });
+}
 
-  let percent_to_pos = calcScroll(element1, element2);
+export function stabilizeSplitEnterScroll(
+  snap: SplitEnterScrollSnap,
+  settleMs: number,
+  onDone: () => void,
+): () => void {
+  const pair = getEditViewScrollEls();
+  if (!pair) {
+    requestAnimationFrame(() => onDone());
+    return () => {};
+  }
+  const [editScroll, viewScroll] = pair;
 
-  var ignore = ignoreScrollEvents;
-  ignoreScrollEvents = false;
-  if (ignore) return;
-  ignoreScrollEvents = true;
-  element2.scrollTop = percent_to_pos;
-};
-
-const addScrollListeners = () => {
-  if (view !== null && edit !== null) {
-    edit.addEventListener('scroll', editScroll);
+  if (snap.atBottom) {
+    pinBothPanesToBottom(editScroll, viewScroll);
+    const ro = new ResizeObserver(() => {
+      pinBothPanesToBottom(editScroll, viewScroll);
+    });
+    ro.observe(editScroll);
+    ro.observe(viewScroll);
+    const tid = window.setTimeout(() => {
+      ro.disconnect();
+      pinBothPanesToBottom(editScroll, viewScroll);
+      onDone();
+    }, settleMs);
+    return () => {
+      window.clearTimeout(tid);
+      ro.disconnect();
+    };
   }
 
-  if (view !== null && edit !== null) {
-    view.addEventListener('scroll', viewScroll);
+  const tid = window.setTimeout(() => {
+    const source = snap.from === 'view' ? viewScroll : editScroll;
+    const target = snap.from === 'view' ? editScroll : viewScroll;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        syncScrollFromTo(source, target);
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => onDone());
+        });
+      });
+    });
+  }, settleMs);
+  return () => window.clearTimeout(tid);
+}
+
+export function detachScrollSyncListeners(): void {
+  clearAttachedScrollListeners();
+}
+
+/** @deprecated use detachScrollSyncListeners */
+export function removeScrollSyncListeners(): void {
+  clearAttachedScrollListeners();
+}
+
+export function initScrollSync(): void {
+  clearAttachedScrollListeners();
+  const editRoot = document.querySelector('#edit');
+  const viewRoot = document.querySelector('#view');
+  editScrollEl =
+    editRoot instanceof HTMLElement ? notePaneScroll(editRoot) : null;
+  viewScrollEl =
+    viewRoot instanceof HTMLElement ? notePaneScroll(viewRoot) : null;
+  if (!editScrollEl || !viewScrollEl) return;
+
+  editScrollHandler = makeScrollHandler(editScrollEl, viewScrollEl);
+  viewScrollHandler = makeScrollHandler(viewScrollEl, editScrollEl);
+  editScrollEl.addEventListener('scroll', editScrollHandler, {
+    passive: true,
+  });
+  viewScrollEl.addEventListener('scroll', viewScrollHandler, {
+    passive: true,
+  });
+}
+
+export function alignNotePanesScroll(
+  layout: 'edit' | 'view' | 'split',
+  splitEnterFrom: 'edit' | 'view' | null,
+): void {
+  const editRoot = document.querySelector('#edit');
+  const viewRoot = document.querySelector('#view');
+  const editScroll =
+    editRoot instanceof HTMLElement ? notePaneScroll(editRoot) : null;
+  const viewScroll =
+    viewRoot instanceof HTMLElement ? notePaneScroll(viewRoot) : null;
+  if (!editScroll || !viewScroll) return;
+
+  if (layout === 'view') {
+    syncScrollFromTo(editScroll, viewScroll);
+  } else if (layout === 'edit') {
+    syncScrollFromTo(viewScroll, editScroll);
+  } else if (layout === 'split') {
+    if (splitEnterFrom === 'edit') {
+      syncScrollFromTo(editScroll, viewScroll);
+    } else if (splitEnterFrom === 'view') {
+      syncScrollFromTo(viewScroll, editScroll);
+    }
   }
-};
+}
+
+export function removeScrollListeners(): void {
+  clearAttachedScrollListeners();
+}

@@ -3,5 +3,5 @@
   [class.md-readonly]="!updatedViewText"
   (click)="onMarkdownClick($event)"
   (keydown)="onMarkdownKeyDown($event)">
-  <span [innerHTML]="outHtml | keepHtml"></span>
+  <span #mdHost class="viewnote_content" data-viewnote-markdown=""></span>
 </div>
