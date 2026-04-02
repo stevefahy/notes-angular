@@ -51,7 +51,7 @@ export class AuthService {
       if (!this.authContext().success) {
         this.autoLogout();
       } else {
-        this.verifyRefreshToken();
+        void this.verifyRefreshTokenWithRetry();
       }
     }, AC.REFRESH_TOKEN_INTERVAL);
   };
@@ -103,12 +103,10 @@ export class AuthService {
   };
 
   public authGuardVerify = async () => {
-    if (!this.authContext().token) {
+    const t = this.authContext().token;
+    if (!t || this.jwtHelper.isTokenExpired(t)) {
       await this.verifyRefreshTokenWithRetry();
     }
-    // console.log(
-    //   this.jwtHelper.getTokenExpirationDate(this.authContext().token!)
-    // );
     return !this.jwtHelper.isTokenExpired(this.authContext().token);
   };
 
